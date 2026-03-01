@@ -1,0 +1,12 @@
+[2026-03-01 06:59:10 UTC] refresh start
+generated /home/node/.openclaw/workspace/sing-box/config.json with 17 outbounds from 17 links
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+curl: (35) Recv failure: Connection reset by peer
+[2026-03-01 06:59:29 UTC] refresh start
+generated /home/node/.openclaw/workspace/sing-box/config.json with 17 outbounds from 17 links
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+[2026-03-01 06:59:33 UTC] refresh ok
