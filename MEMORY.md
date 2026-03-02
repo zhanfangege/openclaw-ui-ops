@@ -10,6 +10,8 @@
 ## Cross-channel continuity rules
 
 - Feishu and webchat context is not guaranteed to be fully shared in real time; key decisions must be written into memory files.
+- **Hard rule (highest priority):** after finishing any meaningful task in either Feishu or webchat, must persist a unified summary before final completion reply.
+- Unified summary template (mandatory): `Decision / Current status / Next step / Blockers`.
 - After major troubleshooting or decisions, append a concise durable summary to `memory/YYYY-MM-DD.md`.
 - Keep this file as long-term distilled memory; keep day files as detailed operational logs.
 
