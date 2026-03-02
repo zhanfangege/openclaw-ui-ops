@@ -18,3 +18,11 @@
 - User approved cross-channel consolidation (Feishu + webchat).
 - Primary operational focus: OpenClaw stability, install/update path consistency, and recoverability.
 - For Windows recovery, prioritize stable user-level install/PATH consistency over ad-hoc mixed install methods.
+
+## LanceDB / memory-lancedb-pro operating rules (adopted)
+
+- On pitfall handling, use dual-memory write + verification before moving on.
+- Keep LanceDB entries short, atomic, structured, and non-duplicative.
+- Always perform `memory_recall` before retrying repeated/failed operations.
+- Confirm target plugin repo/package before editing memory plugin code.
+- After any `plugins/**/*.ts` code change, clear `/tmp/jiti/` before `openclaw gateway restart`.
