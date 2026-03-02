@@ -36,6 +36,20 @@ else
   fi
 fi
 
+if pgrep -af "node .*evolver/index.js --loop" >/dev/null; then
+  note "evolver loop: RUNNING"
+else
+  note "evolver loop: MISSING, starting"
+  "$BASE/bin/evolver_start.sh" >> "$LOG" 2>&1 || true
+  sleep 1
+  if pgrep -af "node .*evolver/index.js --loop" >/dev/null; then
+    note "evolver loop restart: OK"
+  else
+    note "evolver loop restart: FAIL"
+    ok=0
+  fi
+fi
+
 if [ "$ok" -eq 1 ]; then
   note "selfcheck result: HEALTHY"
   exit 0
