@@ -6,10 +6,17 @@ AGENT_LOG="$BASE/evomap/agent.log"
 STATE="$BASE/evomap/state.json"
 RUN_LOG="$BASE/evomap/autotune.log"
 REPORT_DIR="$BASE/reports"
+POLICY="$BASE/ops/evomap-autotune-policy.md"
 STAMP="$(date -u +'%F %T UTC')"
 mkdir -p "$BASE/evomap" "$REPORT_DIR"
 
 log(){ echo "[$STAMP] $*" | tee -a "$RUN_LOG" >/dev/null; }
+
+# Safe-mode whitelist guard
+if [ ! -f "$POLICY" ]; then
+  log "policy_missing -> no action"
+  exit 0
+fi
 
 # 1) Ensure loop health (existing watchdog)
 "$BASE/bin/evomap_watchdog.sh" || true
