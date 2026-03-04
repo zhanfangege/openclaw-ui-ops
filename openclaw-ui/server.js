@@ -153,6 +153,43 @@ app.get('/api/audit', async (_req, res) => {
   }
 });
 
+app.get('/api/alerts', async (_req, res) => {
+  const [gateway, uptime, mem] = await Promise.all([
+    runCommand('openclaw gateway status | head -n 20'),
+    runCommand('uptime'),
+    runCommand("free -m 2>/dev/null | awk 'NR==2{printf \"%s/%s MB\",$3,$2}' || echo n/a")
+  ]);
+
+  const gatewayText = stripAnsi(gateway.output);
+  const uptimeText = stripAnsi(uptime.output);
+  const memText = stripAnsi(mem.output);
+
+  const alerts = [];
+  const loadMatch = uptimeText.match(/load average:\s*([0-9.]+)/i);
+  const load1 = loadMatch ? Number(loadMatch[1]) : 0;
+  const memMatch = memText.match(/(\d+)\/(\d+)\s*MB/i);
+  const memPct = memMatch ? (Number(memMatch[1]) / Number(memMatch[2])) * 100 : 0;
+
+  const gatewayUp = /running|online|active|ok/i.test(gatewayText);
+  if (!gatewayUp) alerts.push({ level: 'critical', message: 'Gateway 非 ONLINE' });
+  if (load1 >= 8) alerts.push({ level: 'warning', message: `系统负载偏高 (${load1.toFixed(2)})` });
+  if (memPct >= 85) alerts.push({ level: 'warning', message: `内存占用偏高 (${memPct.toFixed(0)}%)` });
+
+  if (!alerts.length) alerts.push({ level: 'ok', message: '系统状态正常' });
+
+  let successRate = 100;
+  try {
+    const txt = await fs.promises.readFile(AUDIT_PATH, 'utf8');
+    const rows = txt.trim().split('\n').map((x) => JSON.parse(x)).filter((x) => x.event === 'command_exit').slice(-50);
+    if (rows.length) {
+      const ok = rows.filter((x) => Number(x.exitCode) === 0).length;
+      successRate = Math.round((ok / rows.length) * 100);
+    }
+  } catch {}
+
+  res.json({ ok: true, alerts, successRate, load1, memPct: Number.isFinite(memPct) ? Math.round(memPct) : 0 });
+});
+
 wss.on('connection', (ws, req) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const token = url.searchParams.get('token') || '';

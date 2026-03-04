@@ -4,6 +4,8 @@ const autoRefreshEl = $('autoRefresh');
 const quickWrap = $('quickCommands');
 const trendCanvas = $('trendCanvas');
 const boardTimeEl = $('boardTime');
+const alertsEl = $('alerts');
+const successRateEl = $('successRate');
 const term = new window.Terminal({ convertEol: true, cursorBlink: true, disableStdin: true, theme: { background: '#050a15' } });
 term.open($('terminal'));
 
@@ -75,12 +77,13 @@ function renderQuickCommands() {
 function setKpi(id, value) { const el = $(id); if (el) el.textContent = value || '-'; }
 
 async function loadAll() {
-  const [dash, sessions, subagents, quick, board] = await Promise.all([
+  const [dash, sessions, subagents, quick, board, alerts] = await Promise.all([
     loadJson('/api/dashboard'),
     loadJson('/api/sessions'),
     loadJson('/api/subagents'),
     loadJson('/api/quick-commands'),
-    loadJson('/api/board')
+    loadJson('/api/board'),
+    loadJson('/api/alerts')
   ]);
 
   commands = quick.commands || {};
@@ -113,6 +116,15 @@ async function loadAll() {
   trend.push(activity);
   if (trend.length > 40) trend.shift();
   renderTrend();
+
+  alertsEl.innerHTML = '';
+  (alerts.alerts || []).forEach((a) => {
+    const chip = document.createElement('span');
+    chip.className = `alert-chip ${a.level || 'ok'}`;
+    chip.textContent = a.message;
+    alertsEl.appendChild(chip);
+  });
+  successRateEl.textContent = `${alerts.successRate ?? 100}%`;
 
   boardTimeEl.textContent = new Date().toLocaleTimeString();
 }
