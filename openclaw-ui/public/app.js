@@ -4,7 +4,7 @@ const autoRefreshEl = $('autoRefresh');
 const refreshIntervalEl = $('refreshInterval');
 const smartRefreshEl = $('smartRefresh');
 const quickWrap = $('quickCommands');
-const modelConfigFileEl = $('modelConfigFile');
+const modelConfigTextEl = $('modelConfigText');
 const parseModelConfigEl = $('parseModelConfig');
 const modelHintsEl = $('modelHints');
 const modelSelectEl = $('modelSelect');
@@ -254,12 +254,11 @@ refreshIntervalEl.onchange = () => {
   startAutoRefresh();
 };
 parseModelConfigEl.onclick = async () => {
-  const f = modelConfigFileEl.files?.[0];
-  if (!f) {
-    modelHintsEl.textContent = '请先选择配置文件。';
+  const raw = (modelConfigTextEl.value || '').trim();
+  if (!raw) {
+    modelHintsEl.textContent = '请先粘贴配置内容。';
     return;
   }
-  const raw = await f.text();
   const cleaned = raw
     .replace(/\/\/.*$/gm, '')
     .replace(/\/\*[\s\S]*?\*\//g, '');

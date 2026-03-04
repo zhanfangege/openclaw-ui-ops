@@ -76,8 +76,8 @@ h2 { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.6px; text-transform: up
 .thresholds input { width:80px; padding:4px 6px; border-radius:6px; font-size:11px; }
 @keyframes pulse { 0%{ box-shadow:0 0 0 0 rgba(255,88,122,.45);} 100%{ box-shadow:0 0 0 8px rgba(255,88,122,0);} }
 
-.model-upload { display:flex; gap:8px; margin-bottom:6px; }
-.model-upload input { flex:1; }
+.model-upload { display:flex; gap:8px; margin-bottom:6px; align-items:stretch; }
+.model-upload textarea { flex:1; min-height:64px; resize:vertical; background: var(--input-bg); color: var(--text); border:1px solid var(--input-border); border-radius:8px; padding:7px 9px; }
 .model-hints { font-size:11px; opacity:.82; margin-bottom:6px; }
 .model-switch { display:flex; gap:8px; margin-bottom:6px; }
 .model-switch select { flex:1; background: var(--input-bg); color: var(--text); border:1px solid var(--input-border); border-radius:8px; padding:7px 9px; appearance:none; }
