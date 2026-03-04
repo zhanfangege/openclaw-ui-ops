@@ -5,6 +5,7 @@ const quickWrap = $('quickCommands');
 const modelInputEl = $('modelInput');
 const applyModelEl = $('applyModel');
 const modelsListEl = $('modelsList');
+const modelPresetsEl = $('modelPresets');
 const trendCanvas = $('trendCanvas');
 const boardTimeEl = $('boardTime');
 const alertsEl = $('alerts');
@@ -93,6 +94,23 @@ function renderQuickCommands() {
 
 function setKpi(id, value) { const el = $(id); if (el) el.textContent = value || '-'; }
 
+function renderModelPresets(raw = '') {
+  const matches = (String(raw).match(/[a-zA-Z0-9._-]+\/[a-zA-Z0-9._:@-]+/g) || []);
+  const uniq = [...new Set(matches)].slice(0, 6);
+  modelPresetsEl.innerHTML = '';
+  uniq.forEach((model) => {
+    const b = document.createElement('button');
+    b.className = 'preset-btn';
+    b.textContent = model.length > 30 ? `${model.slice(0, 30)}…` : model;
+    b.title = model;
+    b.onclick = () => {
+      modelInputEl.value = model;
+      ws?.send(JSON.stringify({ type: 'model-set', model }));
+    };
+    modelPresetsEl.appendChild(b);
+  });
+}
+
 function setAndScroll(id, text) {
   const el = $(id);
   if (!el) return;
@@ -120,7 +138,9 @@ async function loadAll() {
   setAndScroll('sessions', (board.panorama?.sessions || sessions.output || 'No sessions running').trim());
   setAndScroll('subagents', (board.panorama?.subagents || subagents.output || 'No subagents running').trim());
 
-  setAndScroll('modelsList', (models.output || '').split('\n').slice(0, 8).join('\n'));
+  const modelRaw = (models.output || '');
+  setAndScroll('modelsList', modelRaw.split('\n').slice(0, 8).join('\n'));
+  renderModelPresets(modelRaw);
 
   setKpi('kpi-openclaw', board.kpi?.openclawVersion);
   setKpi('kpi-node', board.kpi?.nodeVersion);
