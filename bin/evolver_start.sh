@@ -13,6 +13,7 @@ if pgrep -af "node .*evolver/index.js --loop" >/dev/null; then
 fi
 
 cd "$BASE"
+export EVOLVE_STRATEGY="${EVOLVE_STRATEGY:-harden}"
 nohup node "$EVO/index.js" --loop >> "$LOGFILE" 2>&1 &
 PID=$!
 echo "$PID" > "$PIDFILE"
