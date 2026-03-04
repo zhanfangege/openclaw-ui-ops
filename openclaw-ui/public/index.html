@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenClaw UI</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>OpenClaw 管理台</h1>
+      <button id="refresh">刷新状态</button>
+    </header>
+
+    <main>
+      <section class="panel">
+        <h2>工作状态</h2>
+        <div class="cards">
+          <article>
+            <h3>Gateway</h3>
+            <pre id="gateway">加载中...</pre>
+          </article>
+          <article>
+            <h3>OpenClaw</h3>
+            <pre id="claw">加载中...</pre>
+          </article>
+          <article>
+            <h3>系统</h3>
+            <pre id="uptime">加载中...</pre>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>可视化命令行</h2>
+        <div class="cmdbar">
+          <input id="cmd" placeholder="输入命令，如 openclaw status" />
+          <button id="run">运行</button>
+          <button id="stop">停止</button>
+        </div>
+        <pre id="terminal"></pre>
+      </section>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
