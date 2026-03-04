@@ -1,11 +1,17 @@
 const $ = (id) => document.getElementById(id);
 const tokenEl = $('token');
+const autoRefreshEl = $('autoRefresh');
 const quickWrap = $('quickCommands');
+const trendCanvas = $('trendCanvas');
+const boardTimeEl = $('boardTime');
 const term = new window.Terminal({ convertEol: true, cursorBlink: true, disableStdin: true, theme: { background: '#050a15' } });
 term.open($('terminal'));
 
 let ws;
 let commands = {};
+let refreshTimer = null;
+let running = false;
+const trend = [];
 
 function authHeaders() {
   const token = tokenEl.value.trim();
@@ -17,6 +23,39 @@ async function loadJson(path) {
   return r.json();
 }
 
+function setBusy(busy) {
+  running = busy;
+  [...quickWrap.querySelectorAll('button')].forEach((b) => {
+    b.disabled = busy;
+    b.classList.toggle('busy', busy);
+  });
+}
+
+function applyKpiClass(id, mode) {
+  const el = $(id);
+  el.classList.remove('ok', 'warn', 'bad');
+  el.classList.add(mode);
+}
+
+function renderTrend() {
+  const ctx = trendCanvas.getContext('2d');
+  const w = trendCanvas.width = trendCanvas.clientWidth;
+  const h = trendCanvas.height = 44;
+  ctx.clearRect(0, 0, w, h);
+
+  if (trend.length < 2) return;
+  const max = Math.max(...trend, 1);
+  ctx.strokeStyle = '#35f2ff';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  trend.forEach((v, i) => {
+    const x = (i / (trend.length - 1)) * (w - 8) + 4;
+    const y = h - ((v / max) * (h - 10)) - 5;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+}
+
 function renderQuickCommands() {
   quickWrap.innerHTML = '';
   Object.entries(commands).forEach(([key, item]) => {
@@ -24,7 +63,10 @@ function renderQuickCommands() {
     btn.className = 'quick-btn';
     btn.textContent = item.label;
     btn.title = item.command;
-    btn.onclick = () => ws?.send(JSON.stringify({ type: 'quick-run', key }));
+    btn.onclick = () => {
+      if (running) return;
+      ws?.send(JSON.stringify({ type: 'quick-run', key }));
+    };
     quickWrap.appendChild(btn);
   });
 }
@@ -53,6 +95,27 @@ async function loadAll() {
   setKpi('kpi-gateway', board.kpi?.gatewayStatus);
   setKpi('kpi-sessions', board.kpi?.sessionsApprox);
   setKpi('kpi-subagents', board.kpi?.subagentsApprox);
+
+  applyKpiClass('kpi-card-gateway', board.kpi?.gatewayStatus === 'ONLINE' ? 'ok' : 'bad');
+  applyKpiClass('kpi-card-sessions', (Number(board.kpi?.sessionsApprox) > 0 ? 'ok' : 'warn'));
+  applyKpiClass('kpi-card-subagents', (Number(board.kpi?.subagentsApprox) > 0 ? 'ok' : 'warn'));
+  applyKpiClass('kpi-card-openclaw', 'ok');
+  applyKpiClass('kpi-card-node', 'ok');
+
+  const activity = Number(board.kpi?.sessionsApprox || 0) + Number(board.kpi?.subagentsApprox || 0);
+  trend.push(activity);
+  if (trend.length > 40) trend.shift();
+  renderTrend();
+
+  boardTimeEl.textContent = new Date().toLocaleTimeString();
+}
+
+function startAutoRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  if (!autoRefreshEl.checked) return;
+  refreshTimer = setInterval(() => {
+    if (!running) loadAll().catch(() => {});
+  }, 10000);
 }
 
 function connectWs() {
@@ -63,14 +126,27 @@ function connectWs() {
   ws.onmessage = (e) => {
     const msg = JSON.parse(e.data);
     if (msg.type === 'stdout') term.write(msg.data);
-    if (msg.type === 'start') term.writeln(`\r\n\x1b[36m$ ${msg.data.command}\x1b[0m`);
-    if (msg.type === 'exit') term.writeln(`\r\n\x1b[33m[exit ${msg.data.code}]\x1b[0m`);
-    if (msg.type === 'error') term.writeln(`\r\n\x1b[31m[error] ${msg.data}\x1b[0m`);
+    if (msg.type === 'start') {
+      setBusy(true);
+      term.writeln(`\r\n\x1b[36m$ ${msg.data.command}\x1b[0m`);
+    }
+    if (msg.type === 'exit') {
+      setBusy(false);
+      term.writeln(`\r\n\x1b[33m[exit ${msg.data.code}]\x1b[0m`);
+      loadAll().catch(() => {});
+    }
+    if (msg.type === 'error') {
+      setBusy(false);
+      term.writeln(`\r\n\x1b[31m[error] ${msg.data}\x1b[0m`);
+    }
   };
 }
 
 $('refresh').onclick = async () => { connectWs(); await loadAll(); };
 $('stop').onclick = () => ws?.send(JSON.stringify({ type: 'pty-stop' }));
+autoRefreshEl.onchange = () => startAutoRefresh();
 
 connectWs();
 loadAll();
+startAutoRefresh();
+window.addEventListener('resize', renderTrend);

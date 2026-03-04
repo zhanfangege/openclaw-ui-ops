@@ -12,20 +12,22 @@
       <h1>OpenClaw NEXUS Console</h1>
       <div class="right">
         <input id="token" placeholder="UI_TOKEN" />
+        <label class="switch"><input type="checkbox" id="autoRefresh" checked />自动刷新</label>
         <button id="refresh">刷新</button>
       </div>
     </header>
 
     <main>
       <section class="panel board-panel">
-        <h2>运行看板</h2>
+        <h2>运行看板 <span id="boardTime" class="meta"></span></h2>
         <div class="kpi-grid">
-          <div class="kpi"><span>OpenClaw</span><strong id="kpi-openclaw">-</strong></div>
-          <div class="kpi"><span>Node.js</span><strong id="kpi-node">-</strong></div>
-          <div class="kpi"><span>Gateway</span><strong id="kpi-gateway">-</strong></div>
-          <div class="kpi"><span>Sessions</span><strong id="kpi-sessions">-</strong></div>
-          <div class="kpi"><span>Subagents</span><strong id="kpi-subagents">-</strong></div>
+          <div class="kpi" id="kpi-card-openclaw"><span>OpenClaw</span><strong id="kpi-openclaw">-</strong></div>
+          <div class="kpi" id="kpi-card-node"><span>Node.js</span><strong id="kpi-node">-</strong></div>
+          <div class="kpi" id="kpi-card-gateway"><span>Gateway</span><strong id="kpi-gateway">-</strong></div>
+          <div class="kpi" id="kpi-card-sessions"><span>Sessions</span><strong id="kpi-sessions">-</strong></div>
+          <div class="kpi" id="kpi-card-subagents"><span>Subagents</span><strong id="kpi-subagents">-</strong></div>
         </div>
+        <canvas id="trendCanvas" height="44"></canvas>
       </section>
 
       <section class="panel quick-panel">
