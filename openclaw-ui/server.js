@@ -100,19 +100,27 @@ app.get('/api/models-candidates', async (_req, res) => {
 });
 
 app.get('/api/board', async (_req, res) => {
-  const [ver, node, gateway, sessions, subagents, uptime, mem] = await Promise.all([
+  const [ver, node, gateway, sessions, subagents, uptime, mem, status, ctx] = await Promise.all([
     runCommand('openclaw --version || openclaw version || echo unknown'),
     runCommand('node -v'),
     runCommand('openclaw gateway status | head -n 30'),
-    runCommand('openclaw sessions list --limit 100'),
-    runCommand('openclaw subagents list --recent-minutes 120'),
+    runCommand('openclaw sessions list --limit 100 || openclaw sessions list'),
+    runCommand('openclaw subagents list --recent-minutes 120 || openclaw agents list'),
     runCommand('uptime'),
-    runCommand("free -m 2>/dev/null | awk 'NR==2{printf \"%s/%s MB\",$3,$2}' || echo n/a")
+    runCommand("free -m 2>/dev/null | awk 'NR==2{printf \"%s/%s MB\",$3,$2}' || echo n/a"),
+    runCommand('openclaw status | head -n 220'),
+    runCommand("bash -lc \"openclaw status --all 2>/dev/null | grep -Eo '[0-9]+(\\.[0-9]+)?[kmg]?/[0-9]+(\\.[0-9]+)?[kmg]? \\\\([^)]*%\\\\)' | head -n1 || true\"")
   ]);
 
   const sessionsText = stripAnsi(sessions.output);
   const subagentsText = stripAnsi(subagents.output);
   const gatewayText = stripAnsi(gateway.output);
+  const statusText = stripAnsi(status.output);
+
+  const ctxText = stripAnsi(ctx.output || '').trim();
+  const ctxMatch = statusText.match(/(\d+(?:\.\d+)?[kmg]?\s*\/\s*\d+(?:\.\d+)?[kmg]?\s*\([^\)]*%\))/i)
+    || statusText.match(/(\d+(?:\.\d+)?[kmg]?\s*\/\s*\d+(?:\.\d+)?[kmg]?)/i);
+  const contextUsage = ctxText || (ctxMatch ? ctxMatch[1].replace(/\s+/g, ' ').trim() : 'n/a');
 
   const activeSessions = countDataRows(sessionsText);
   const activeSubagents = countDataRows(subagentsText);
@@ -129,12 +137,14 @@ app.get('/api/board', async (_req, res) => {
       subagentsApprox: activeSubagents,
       uptime: stripAnsi(uptime.output).trim(),
       memory: stripAnsi(mem.output).trim(),
+      contextUsage,
       health: doctorFlag
     },
     panorama: {
       gateway: gatewayText || 'No gateway status output',
       sessions: sessionsText || 'No sessions running',
-      subagents: subagentsText || 'No subagents running'
+      subagents: subagentsText || 'No subagents running',
+      status: statusText || 'No openclaw status output'
     }
   });
 });

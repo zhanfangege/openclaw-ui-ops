@@ -146,6 +146,7 @@ async function loadAll() {
   setKpi('kpi-sessions', board.kpi?.sessionsApprox);
   setKpi('kpi-subagents', board.kpi?.subagentsApprox);
   setKpi('kpi-uptime', board.kpi?.uptime?.slice(0, 24));
+  setKpi('kpi-context', board.kpi?.contextUsage);
   setKpi('kpi-memory', board.kpi?.memory);
   setKpi('kpi-health', board.kpi?.health);
 
@@ -156,6 +157,7 @@ async function loadAll() {
   applyKpiClass('kpi-card-openclaw', 'ok');
   applyKpiClass('kpi-card-node', 'ok');
   applyKpiClass('kpi-card-uptime', 'ok');
+  applyKpiClass('kpi-card-context', board.kpi?.contextUsage && board.kpi?.contextUsage !== 'n/a' ? 'ok' : 'warn');
   applyKpiClass('kpi-card-memory', 'ok');
 
   const activity = Number(board.kpi?.sessionsApprox || 0) + Number(board.kpi?.subagentsApprox || 0);
