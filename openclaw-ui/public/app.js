@@ -4,6 +4,9 @@ const autoRefreshEl = $('autoRefresh');
 const refreshIntervalEl = $('refreshInterval');
 const smartRefreshEl = $('smartRefresh');
 const quickWrap = $('quickCommands');
+const modelConfigFileEl = $('modelConfigFile');
+const parseModelConfigEl = $('parseModelConfig');
+const modelHintsEl = $('modelHints');
 const modelSelectEl = $('modelSelect');
 const applyModelEl = $('applyModel');
 const trendCanvas = $('trendCanvas');
@@ -96,7 +99,7 @@ function renderQuickCommands() {
 
 function setKpi(id, value) { const el = $(id); if (el) el.textContent = value || '-'; }
 
-function renderModelOptions(models = []) {
+function renderModelOptions(models = [], keepCurrent = true) {
   const current = modelSelectEl.value;
   modelSelectEl.innerHTML = '';
   if (!models.length) {
@@ -112,7 +115,12 @@ function renderModelOptions(models = []) {
     op.textContent = m;
     modelSelectEl.appendChild(op);
   });
-  if (current && models.includes(current)) modelSelectEl.value = current;
+  if (keepCurrent && current && models.includes(current)) modelSelectEl.value = current;
+}
+
+function extractModelsFromText(text = '') {
+  const list = String(text).match(/[a-zA-Z0-9._-]+\/[a-zA-Z0-9._:@-]+/g) || [];
+  return [...new Set(list)].slice(0, 200);
 }
 
 function setAndScroll(id, text) {
@@ -179,6 +187,9 @@ async function loadModelCandidatesOnce(force = false) {
   if (modelsLoaded && !force) return;
   const candidates = await loadJson('/api/models-candidates');
   renderModelOptions(candidates.models || []);
+  modelHintsEl.textContent = (candidates.models || []).length
+    ? `已检测当前环境可调用模型 ${(candidates.models || []).length} 个；也可上传配置文件覆盖候选列表。`
+    : '未检测到可调用模型，可上传配置文件识别模型候选。';
   modelsLoaded = true;
 }
 
@@ -242,6 +253,25 @@ refreshIntervalEl.onchange = () => {
   localStorage.setItem('refresh-interval-sec', String(refreshIntervalEl.value || '10'));
   startAutoRefresh();
 };
+parseModelConfigEl.onclick = async () => {
+  const f = modelConfigFileEl.files?.[0];
+  if (!f) {
+    modelHintsEl.textContent = '请先选择配置文件。';
+    return;
+  }
+  const raw = await f.text();
+  const cleaned = raw
+    .replace(/\/\/.*$/gm, '')
+    .replace(/\/\*[\s\S]*?\*\//g, '');
+  const models = extractModelsFromText(cleaned);
+  if (!models.length) {
+    modelHintsEl.textContent = '未识别到 provider/model，请检查配置文件内容。';
+    return;
+  }
+  renderModelOptions(models, false);
+  modelHintsEl.textContent = `已从配置识别 ${models.length} 个模型，请手动选择后点击“确认切换模型”。`;
+};
+
 applyModelEl.onclick = () => {
   const model = modelSelectEl.value.trim();
   if (!model) return;

@@ -51,9 +51,14 @@
 
       <section class="panel quick-panel">
         <h2>快捷命令 / 模型切换</h2>
+        <div class="model-upload">
+          <input id="modelConfigFile" type="file" accept=".json,.jsonc,.txt" />
+          <button id="parseModelConfig">识别配置模型</button>
+        </div>
+        <div id="modelHints" class="model-hints">可上传 openclaw 配置文件，先识别模型，再手动确认切换。</div>
         <div class="model-switch">
           <select id="modelSelect"></select>
-          <button id="applyModel">一键切换模型</button>
+          <button id="applyModel">确认切换模型</button>
         </div>
         <div id="quickCommands" class="quick-grid"></div>
       </section>
