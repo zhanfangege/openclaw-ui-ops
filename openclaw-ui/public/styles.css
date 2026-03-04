@@ -69,6 +69,9 @@ h2 { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.6px; text-transform: up
 .alert-chip.warning { color:#ffd27b; border-color: rgba(255,193,70,.75); }
 .alert-chip.critical { color:#ff9fb4; border-color: rgba(255,88,122,.8); animation: pulse 1s infinite; }
 .success-rate { font-size:11px; opacity:.9; white-space: nowrap; }
+.thresholds { margin-top:8px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.thresholds label { font-size:11px; opacity:.9; display:flex; gap:6px; align-items:center; }
+.thresholds input { width:80px; padding:4px 6px; border-radius:6px; font-size:11px; }
 @keyframes pulse { 0%{ box-shadow:0 0 0 0 rgba(255,88,122,.45);} 100%{ box-shadow:0 0 0 8px rgba(255,88,122,0);} }
 
 .quick-grid { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:8px; max-height: 220px; overflow:auto; }

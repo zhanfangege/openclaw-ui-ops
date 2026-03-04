@@ -6,6 +6,9 @@ const trendCanvas = $('trendCanvas');
 const boardTimeEl = $('boardTime');
 const alertsEl = $('alerts');
 const successRateEl = $('successRate');
+const loadWarnEl = $('loadWarn');
+const memWarnEl = $('memWarn');
+const saveThresholdsEl = $('saveThresholds');
 const term = new window.Terminal({ convertEol: true, cursorBlink: true, disableStdin: true, theme: { background: '#050a15' } });
 term.open($('terminal'));
 
@@ -23,6 +26,17 @@ function authHeaders() {
 async function loadJson(path) {
   const r = await fetch(path, { headers: authHeaders() });
   return r.json();
+}
+
+function getThresholds() {
+  const loadWarn = Number(loadWarnEl.value || 8);
+  const memWarn = Number(memWarnEl.value || 85);
+  return { loadWarn, memWarn };
+}
+
+function alertsPath() {
+  const { loadWarn, memWarn } = getThresholds();
+  return `/api/alerts?loadWarn=${encodeURIComponent(loadWarn)}&memWarn=${encodeURIComponent(memWarn)}`;
 }
 
 function setBusy(busy) {
@@ -83,7 +97,7 @@ async function loadAll() {
     loadJson('/api/subagents'),
     loadJson('/api/quick-commands'),
     loadJson('/api/board'),
-    loadJson('/api/alerts')
+    loadJson(alertsPath())
   ]);
 
   commands = quick.commands || {};
@@ -164,6 +178,17 @@ function connectWs() {
 $('refresh').onclick = async () => { connectWs(); await loadAll(); };
 $('stop').onclick = () => ws?.send(JSON.stringify({ type: 'pty-stop' }));
 autoRefreshEl.onchange = () => startAutoRefresh();
+
+saveThresholdsEl.onclick = async () => {
+  localStorage.setItem('alert-thresholds', JSON.stringify(getThresholds()));
+  await loadAll();
+};
+
+try {
+  const saved = JSON.parse(localStorage.getItem('alert-thresholds') || '{}');
+  if (saved.loadWarn) loadWarnEl.value = saved.loadWarn;
+  if (saved.memWarn) memWarnEl.value = saved.memWarn;
+} catch {}
 
 connectWs();
 loadAll();

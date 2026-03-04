@@ -35,6 +35,11 @@
           <div id="alerts" class="alerts"></div>
           <div class="success-rate">命令成功率(最近50次): <strong id="successRate">-</strong></div>
         </div>
+        <div class="thresholds">
+          <label>Load阈值 <input id="loadWarn" type="number" min="1" step="0.1" value="8" /></label>
+          <label>内存阈值% <input id="memWarn" type="number" min="1" max="100" step="1" value="85" /></label>
+          <button id="saveThresholds">保存阈值</button>
+        </div>
       </section>
 
       <section class="panel quick-panel">

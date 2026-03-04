@@ -153,7 +153,10 @@ app.get('/api/audit', async (_req, res) => {
   }
 });
 
-app.get('/api/alerts', async (_req, res) => {
+app.get('/api/alerts', async (req, res) => {
+  const loadWarn = Number(req.query.loadWarn || 8);
+  const memWarn = Number(req.query.memWarn || 85);
+
   const [gateway, uptime, mem] = await Promise.all([
     runCommand('openclaw gateway status | head -n 20'),
     runCommand('uptime'),
@@ -172,8 +175,8 @@ app.get('/api/alerts', async (_req, res) => {
 
   const gatewayUp = /running|online|active|ok/i.test(gatewayText);
   if (!gatewayUp) alerts.push({ level: 'critical', message: 'Gateway 非 ONLINE' });
-  if (load1 >= 8) alerts.push({ level: 'warning', message: `系统负载偏高 (${load1.toFixed(2)})` });
-  if (memPct >= 85) alerts.push({ level: 'warning', message: `内存占用偏高 (${memPct.toFixed(0)}%)` });
+  if (load1 >= loadWarn) alerts.push({ level: 'warning', message: `系统负载偏高 (${load1.toFixed(2)} >= ${loadWarn})` });
+  if (memPct >= memWarn) alerts.push({ level: 'warning', message: `内存占用偏高 (${memPct.toFixed(0)}% >= ${memWarn}%)` });
 
   if (!alerts.length) alerts.push({ level: 'ok', message: '系统状态正常' });
 
@@ -187,7 +190,7 @@ app.get('/api/alerts', async (_req, res) => {
     }
   } catch {}
 
-  res.json({ ok: true, alerts, successRate, load1, memPct: Number.isFinite(memPct) ? Math.round(memPct) : 0 });
+  res.json({ ok: true, alerts, successRate, load1, memPct: Number.isFinite(memPct) ? Math.round(memPct) : 0, thresholds: { loadWarn, memWarn } });
 });
 
 wss.on('connection', (ws, req) => {
