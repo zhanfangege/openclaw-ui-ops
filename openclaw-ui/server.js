@@ -2,13 +2,10 @@ import express from 'express';
 import { createServer as createHttpServer } from 'http';
 import { createServer as createHttpsServer } from 'https';
 import { WebSocketServer } from 'ws';
-import { exec as execCb } from 'child_process';
-import { promisify } from 'util';
 import fs from 'fs';
 import path from 'path';
 import pty from 'node-pty';
 
-const exec = promisify(execCb);
 const app = express();
 
 const PORT = process.env.PORT || 4173;
@@ -17,6 +14,17 @@ const UI_TOKEN = process.env.UI_TOKEN || '';
 const AUDIT_PATH = path.join(process.cwd(), 'audit.log');
 const SSL_KEY_PATH = process.env.SSL_KEY_PATH || '';
 const SSL_CERT_PATH = process.env.SSL_CERT_PATH || '';
+
+const QUICK_COMMANDS = {
+  'gateway-status': { label: 'Gateway 状态', command: 'openclaw gateway status', group: 'Gateway' },
+  'gateway-start': { label: 'Gateway 启动', command: 'openclaw gateway start', group: 'Gateway' },
+  'gateway-stop': { label: 'Gateway 停止', command: 'openclaw gateway stop', group: 'Gateway' },
+  'gateway-restart': { label: 'Gateway 重启', command: 'openclaw gateway restart', group: 'Gateway' },
+  'openclaw-status': { label: 'OpenClaw 状态', command: 'openclaw status', group: 'OpenClaw' },
+  'sessions-list': { label: 'Sessions 列表', command: 'openclaw sessions list --limit 30', group: 'OpenClaw' },
+  'subagents-list': { label: 'Subagents 列表', command: 'openclaw subagents list --recent-minutes 120', group: 'OpenClaw' },
+  'doctor': { label: 'OpenClaw Doctor', command: 'openclaw doctor', group: '诊断' }
+};
 
 const server = SSL_KEY_PATH && SSL_CERT_PATH
   ? createHttpsServer({
@@ -40,49 +48,46 @@ function audit(event, payload = {}) {
   fs.appendFile(AUDIT_PATH, `${line}\n`, () => {});
 }
 
-function safeShell(cmd) {
-  const blocked = [
-    /\brm\s+-rf\b/i,
-    /\bmkfs\b/i,
-    /:\(\)\{:\|:&\};:/,
-    /\bshutdown\b/i,
-    /\breboot\b/i,
-    /\bdd\s+if=/i
-  ];
-  return !blocked.some((re) => re.test(cmd));
-}
-
-async function runQuick(cmd) {
-  try {
-    const { stdout, stderr } = await exec(cmd, { timeout: 12000 });
-    return { ok: true, stdout, stderr };
-  } catch (e) {
-    return { ok: false, stdout: e.stdout || '', stderr: e.stderr || e.message };
-  }
-}
-
 app.use((req, res, next) => {
   if (!authed(req)) return res.status(401).json({ ok: false, error: 'unauthorized' });
   next();
 });
 
+app.get('/api/quick-commands', (_req, res) => {
+  res.json({ ok: true, commands: QUICK_COMMANDS });
+});
+
 app.get('/api/dashboard', async (_req, res) => {
+  const command = (key) => QUICK_COMMANDS[key].command;
+  const run = (cmd) => new Promise((resolve) => {
+    const p = pty.spawn('bash', ['-lc', cmd], { name: 'xterm-color', cols: 120, rows: 30, cwd: process.cwd(), env: process.env });
+    let out = '';
+    p.onData((d) => { out += d; });
+    p.onExit(({ exitCode }) => resolve({ ok: exitCode === 0, output: out, exitCode }));
+  });
+
   const [gateway, claw, uptime] = await Promise.all([
-    runQuick('openclaw gateway status'),
-    runQuick('openclaw status'),
-    runQuick('uptime')
+    run(command('gateway-status')),
+    run(command('openclaw-status')),
+    run('uptime')
   ]);
   res.json({ gateway, claw, uptime, at: new Date().toISOString() });
 });
 
 app.get('/api/sessions', async (_req, res) => {
-  const data = await runQuick('openclaw sessions list --limit 30');
-  res.json(data);
+  const cmd = QUICK_COMMANDS['sessions-list'].command;
+  const p = pty.spawn('bash', ['-lc', cmd], { name: 'xterm-color', cols: 120, rows: 30, cwd: process.cwd(), env: process.env });
+  let out = '';
+  p.onData((d) => { out += d; });
+  p.onExit(({ exitCode }) => res.json({ ok: exitCode === 0, output: out, exitCode }));
 });
 
 app.get('/api/subagents', async (_req, res) => {
-  const data = await runQuick('openclaw subagents list --recent-minutes 120');
-  res.json(data);
+  const cmd = QUICK_COMMANDS['subagents-list'].command;
+  const p = pty.spawn('bash', ['-lc', cmd], { name: 'xterm-color', cols: 120, rows: 30, cwd: process.cwd(), env: process.env });
+  let out = '';
+  p.onData((d) => { out += d; });
+  p.onExit(({ exitCode }) => res.json({ ok: exitCode === 0, output: out, exitCode }));
 });
 
 app.get('/api/audit', async (_req, res) => {
@@ -115,16 +120,17 @@ wss.on('connection', (ws, req) => {
       return;
     }
 
-    if (msg.type === 'pty-start') {
-      const command = msg.command?.trim();
-      if (!command) return ws.send(JSON.stringify({ type: 'error', data: 'missing command' }));
-      if (!safeShell(command)) return ws.send(JSON.stringify({ type: 'error', data: 'blocked by safety policy' }));
+    if (msg.type === 'quick-run') {
+      const key = msg.key;
+      const item = QUICK_COMMANDS[key];
+      if (!item) return ws.send(JSON.stringify({ type: 'error', data: 'unknown command key' }));
 
       if (current) {
         current.kill();
         current = null;
       }
 
+      const command = item.command;
       current = pty.spawn('bash', ['-lc', command], {
         name: 'xterm-color',
         cols: 120,
@@ -133,19 +139,17 @@ wss.on('connection', (ws, req) => {
         env: process.env
       });
 
-      audit('command_start', { command, ip: req.socket.remoteAddress || '' });
-      ws.send(JSON.stringify({ type: 'start', data: { command } }));
+      audit('command_start', { key, command, ip: req.socket.remoteAddress || '' });
+      ws.send(JSON.stringify({ type: 'start', data: { command, key, label: item.label } }));
 
       current.onData((data) => ws.send(JSON.stringify({ type: 'stdout', data })));
       current.onExit(({ exitCode }) => {
-        audit('command_exit', { command, exitCode });
+        audit('command_exit', { key, command, exitCode });
         ws.send(JSON.stringify({ type: 'exit', data: { code: exitCode } }));
         current = null;
       });
     }
 
-    if (msg.type === 'pty-input' && current) current.write(msg.data || '');
-    if (msg.type === 'pty-resize' && current) current.resize(msg.cols || 120, msg.rows || 30);
     if (msg.type === 'pty-stop' && current) {
       audit('command_stop', {});
       current.kill();

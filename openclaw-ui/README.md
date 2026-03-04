@@ -4,7 +4,7 @@ OpenClaw 的 Web 管理界面（MVP+）：
 
 - 详细工作状态（gateway/openclaw/system）
 - Sessions/Subagents 状态面板
-- 可视化命令行（PTY 实时交互）
+- 可视化命令行（按钮触发常用命令，PTY 实时输出）
 - 审计日志（command start/stop/exit）
 - 可选 Token 鉴权（`UI_TOKEN`）
 
@@ -26,7 +26,8 @@ UI_TOKEN=your-token npm start
 - `GET /api/sessions`
 - `GET /api/subagents`
 - `GET /api/audit`
-- `WS /ws?token=...`（PTY）
+- `GET /api/quick-commands`
+- `WS /ws?token=...`（`quick-run` 按钮命令执行）
 
 ## 安全策略（当前）
 

@@ -1,9 +1,11 @@
 const $ = (id) => document.getElementById(id);
 const tokenEl = $('token');
-const term = new window.Terminal({ convertEol: true, cursorBlink: true, theme: { background: '#050a15' } });
+const quickWrap = $('quickCommands');
+const term = new window.Terminal({ convertEol: true, cursorBlink: true, disableStdin: true, theme: { background: '#050a15' } });
 term.open($('terminal'));
 
 let ws;
+let commands = {};
 
 function authHeaders() {
   const token = tokenEl.value.trim();
@@ -15,19 +17,35 @@ async function loadJson(path) {
   return r.json();
 }
 
+function renderQuickCommands() {
+  quickWrap.innerHTML = '';
+  Object.entries(commands).forEach(([key, item]) => {
+    const btn = document.createElement('button');
+    btn.className = 'quick-btn';
+    btn.textContent = item.label;
+    btn.title = item.command;
+    btn.onclick = () => ws?.send(JSON.stringify({ type: 'quick-run', key }));
+    quickWrap.appendChild(btn);
+  });
+}
+
 async function loadAll() {
-  const [dash, sessions, subagents, audit] = await Promise.all([
+  const [dash, sessions, subagents, audit, quick] = await Promise.all([
     loadJson('/api/dashboard'),
     loadJson('/api/sessions'),
     loadJson('/api/subagents'),
-    loadJson('/api/audit')
+    loadJson('/api/audit'),
+    loadJson('/api/quick-commands')
   ]);
 
-  $('gateway').textContent = `${dash.gateway?.ok ? '✅' : '❌'}\n${dash.gateway?.stdout || dash.gateway?.stderr || ''}`;
-  $('claw').textContent = `${dash.claw?.ok ? '✅' : '❌'}\n${dash.claw?.stdout || dash.claw?.stderr || ''}`;
-  $('uptime').textContent = dash.uptime?.stdout || dash.uptime?.stderr || '';
-  $('sessions').textContent = sessions.stdout || sessions.stderr || JSON.stringify(sessions, null, 2);
-  $('subagents').textContent = subagents.stdout || subagents.stderr || JSON.stringify(subagents, null, 2);
+  commands = quick.commands || {};
+  renderQuickCommands();
+
+  $('gateway').textContent = `${dash.gateway?.ok ? '✅' : '❌'}\n${dash.gateway?.output || ''}`;
+  $('claw').textContent = `${dash.claw?.ok ? '✅' : '❌'}\n${dash.claw?.output || ''}`;
+  $('uptime').textContent = dash.uptime?.output || '';
+  $('sessions').textContent = sessions.output || '';
+  $('subagents').textContent = subagents.output || '';
   $('audit').textContent = (audit.lines || []).join('\n');
 }
 
@@ -50,17 +68,7 @@ $('refresh').onclick = async () => {
   await loadAll();
 };
 
-$('run').onclick = () => {
-  const command = $('cmd').value.trim();
-  if (!command || !ws) return;
-  ws.send(JSON.stringify({ type: 'pty-start', command }));
-};
 $('stop').onclick = () => ws?.send(JSON.stringify({ type: 'pty-stop' }));
-
-term.onData((data) => ws?.send(JSON.stringify({ type: 'pty-input', data })));
-window.addEventListener('resize', () => {
-  ws?.send(JSON.stringify({ type: 'pty-resize', cols: 120, rows: 30 }));
-});
 
 connectWs();
 loadAll();

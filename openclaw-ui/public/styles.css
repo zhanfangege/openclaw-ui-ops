@@ -8,7 +8,10 @@ main { padding: 16px; display:grid; gap: 16px; }
 .cards.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 article { background:#0d1428; border:1px solid #253457; border-radius:8px; padding:8px; }
 pre { white-space: pre-wrap; word-break: break-word; margin:0; font-size:12px; max-height:260px; overflow:auto; }
-.cmdbar { display:flex; gap:8px; margin-bottom:8px; }
+.cmdbar { display:flex; gap:8px; margin:8px 0; }
 input { flex:1; background:#0a1122; color:#e6edff; border:1px solid #2a3c64; border-radius:6px; padding:8px; }
 button { background:#2c6cff; color:white; border:0; border-radius:6px; padding:8px 12px; cursor:pointer; }
+.quick-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap:8px; margin-bottom:8px; }
+.quick-btn { background:#1f4ed8; }
+.quick-btn:hover { background:#2563eb; }
 #terminal { min-height:320px; border-radius:8px; border:1px solid #1f2a44; padding:6px; background:#050a15; }
