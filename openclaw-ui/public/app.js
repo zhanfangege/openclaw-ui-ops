@@ -90,6 +90,13 @@ function renderQuickCommands() {
 
 function setKpi(id, value) { const el = $(id); if (el) el.textContent = value || '-'; }
 
+function setAndScroll(id, text) {
+  const el = $(id);
+  if (!el) return;
+  el.textContent = text;
+  el.scrollTop = el.scrollHeight;
+}
+
 async function loadAll() {
   const [dash, sessions, subagents, quick, board, alerts] = await Promise.all([
     loadJson('/api/dashboard'),
@@ -103,10 +110,10 @@ async function loadAll() {
   commands = quick.commands || {};
   renderQuickCommands();
 
-  $('gateway').textContent = `${dash.gateway?.ok ? '✅' : '❌'}\n${(board.panorama?.gateway || dash.gateway?.output || '').trim()}`;
-  $('claw').textContent = `${dash.claw?.ok ? '✅' : '❌'}\n${dash.claw?.output || ''}`;
-  $('sessions').textContent = (board.panorama?.sessions || sessions.output || 'No sessions running').trim();
-  $('subagents').textContent = (board.panorama?.subagents || subagents.output || 'No subagents running').trim();
+  setAndScroll('gateway', `${dash.gateway?.ok ? '✅' : '❌'}\n${(board.panorama?.gateway || dash.gateway?.output || '').trim()}`);
+  setAndScroll('claw', `${dash.claw?.ok ? '✅' : '❌'}\n${dash.claw?.output || ''}`);
+  setAndScroll('sessions', (board.panorama?.sessions || sessions.output || 'No sessions running').trim());
+  setAndScroll('subagents', (board.panorama?.subagents || subagents.output || 'No subagents running').trim());
 
   setKpi('kpi-openclaw', board.kpi?.openclawVersion);
   setKpi('kpi-node', board.kpi?.nodeVersion);
@@ -158,19 +165,25 @@ function connectWs() {
   ws.onopen = () => term.writeln('\x1b[32m[ws connected]\x1b[0m');
   ws.onmessage = (e) => {
     const msg = JSON.parse(e.data);
-    if (msg.type === 'stdout') term.write(msg.data);
+    if (msg.type === 'stdout') {
+      term.write(msg.data);
+      term.scrollToBottom();
+    }
     if (msg.type === 'start') {
       setBusy(true);
       term.writeln(`\r\n\x1b[36m$ ${msg.data.command}\x1b[0m`);
+      term.scrollToBottom();
     }
     if (msg.type === 'exit') {
       setBusy(false);
       term.writeln(`\r\n\x1b[33m[exit ${msg.data.code}]\x1b[0m`);
+      term.scrollToBottom();
       loadAll().catch(() => {});
     }
     if (msg.type === 'error') {
       setBusy(false);
       term.writeln(`\r\n\x1b[31m[error] ${msg.data}\x1b[0m`);
+      term.scrollToBottom();
     }
   };
 }
