@@ -4,44 +4,53 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OpenClaw UI</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.css" />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
     <header>
       <h1>OpenClaw 管理台</h1>
-      <button id="refresh">刷新状态</button>
+      <div class="right">
+        <input id="token" placeholder="UI_TOKEN (可选)" />
+        <button id="refresh">刷新</button>
+      </div>
     </header>
 
     <main>
       <section class="panel">
         <h2>工作状态</h2>
         <div class="cards">
-          <article>
-            <h3>Gateway</h3>
-            <pre id="gateway">加载中...</pre>
-          </article>
-          <article>
-            <h3>OpenClaw</h3>
-            <pre id="claw">加载中...</pre>
-          </article>
-          <article>
-            <h3>系统</h3>
-            <pre id="uptime">加载中...</pre>
-          </article>
+          <article><h3>Gateway</h3><pre id="gateway"></pre></article>
+          <article><h3>OpenClaw</h3><pre id="claw"></pre></article>
+          <article><h3>系统</h3><pre id="uptime"></pre></article>
         </div>
       </section>
 
       <section class="panel">
-        <h2>可视化命令行</h2>
+        <h2>Sessions / Subagents</h2>
+        <div class="cards two">
+          <article><h3>Sessions</h3><pre id="sessions"></pre></article>
+          <article><h3>Subagents</h3><pre id="subagents"></pre></article>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>可视化命令行 (PTY)</h2>
         <div class="cmdbar">
           <input id="cmd" placeholder="输入命令，如 openclaw status" />
           <button id="run">运行</button>
           <button id="stop">停止</button>
         </div>
-        <pre id="terminal"></pre>
+        <div id="terminal"></div>
+      </section>
+
+      <section class="panel">
+        <h2>审计日志</h2>
+        <pre id="audit"></pre>
       </section>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/xterm/lib/xterm.js"></script>
     <script type="module" src="/app.js"></script>
   </body>
 </html>
