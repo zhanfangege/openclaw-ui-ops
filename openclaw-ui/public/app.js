@@ -2,9 +2,8 @@ const $ = (id) => document.getElementById(id);
 const tokenEl = $('token');
 const autoRefreshEl = $('autoRefresh');
 const quickWrap = $('quickCommands');
-const modelInputEl = $('modelInput');
+const modelSelectEl = $('modelSelect');
 const applyModelEl = $('applyModel');
-const modelPresetsEl = $('modelPresets');
 const trendCanvas = $('trendCanvas');
 const boardTimeEl = $('boardTime');
 const alertsEl = $('alerts');
@@ -93,21 +92,23 @@ function renderQuickCommands() {
 
 function setKpi(id, value) { const el = $(id); if (el) el.textContent = value || '-'; }
 
-function renderModelPresets(raw = '') {
-  const matches = (String(raw).match(/[a-zA-Z0-9._-]+\/[a-zA-Z0-9._:@-]+/g) || []);
-  const uniq = [...new Set(matches)].slice(0, 6);
-  modelPresetsEl.innerHTML = '';
-  uniq.forEach((model) => {
-    const b = document.createElement('button');
-    b.className = 'preset-btn';
-    b.textContent = model.length > 30 ? `${model.slice(0, 30)}…` : model;
-    b.title = model;
-    b.onclick = () => {
-      modelInputEl.value = model;
-      ws?.send(JSON.stringify({ type: 'model-set', model }));
-    };
-    modelPresetsEl.appendChild(b);
+function renderModelOptions(models = []) {
+  const current = modelSelectEl.value;
+  modelSelectEl.innerHTML = '';
+  if (!models.length) {
+    const op = document.createElement('option');
+    op.value = '';
+    op.textContent = '未检测到可用模型';
+    modelSelectEl.appendChild(op);
+    return;
+  }
+  models.forEach((m) => {
+    const op = document.createElement('option');
+    op.value = m;
+    op.textContent = m;
+    modelSelectEl.appendChild(op);
   });
+  if (current && models.includes(current)) modelSelectEl.value = current;
 }
 
 function setAndScroll(id, text) {
@@ -119,14 +120,14 @@ function setAndScroll(id, text) {
 }
 
 async function loadAll() {
-  const [dash, sessions, subagents, quick, board, alerts, models] = await Promise.all([
+  const [dash, sessions, subagents, quick, board, alerts, candidates] = await Promise.all([
     loadJson('/api/dashboard'),
     loadJson('/api/sessions'),
     loadJson('/api/subagents'),
     loadJson('/api/quick-commands'),
     loadJson('/api/board'),
     loadJson(alertsPath()),
-    loadJson('/api/models-list')
+    loadJson('/api/models-candidates')
   ]);
 
   commands = quick.commands || {};
@@ -137,8 +138,7 @@ async function loadAll() {
   setAndScroll('sessions', (board.panorama?.sessions || sessions.output || 'No sessions running').trim());
   setAndScroll('subagents', (board.panorama?.subagents || subagents.output || 'No subagents running').trim());
 
-  const modelRaw = (models.output || '');
-  renderModelPresets(modelRaw);
+  renderModelOptions(candidates.models || []);
 
   setKpi('kpi-openclaw', board.kpi?.openclawVersion);
   setKpi('kpi-node', board.kpi?.nodeVersion);
@@ -217,7 +217,7 @@ $('refresh').onclick = async () => { connectWs(); await loadAll(); };
 $('stop').onclick = () => ws?.send(JSON.stringify({ type: 'pty-stop' }));
 autoRefreshEl.onchange = () => startAutoRefresh();
 applyModelEl.onclick = () => {
-  const model = modelInputEl.value.trim();
+  const model = modelSelectEl.value.trim();
   if (!model) return;
   ws?.send(JSON.stringify({ type: 'model-set', model }));
 };

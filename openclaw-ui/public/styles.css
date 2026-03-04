@@ -75,9 +75,7 @@ h2 { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.6px; text-transform: up
 @keyframes pulse { 0%{ box-shadow:0 0 0 0 rgba(255,88,122,.45);} 100%{ box-shadow:0 0 0 8px rgba(255,88,122,0);} }
 
 .model-switch { display:flex; gap:8px; margin-bottom:6px; }
-.model-switch input { flex:1; }
-.model-presets { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px; }
-.preset-btn { font-size:10px; padding:4px 8px; border-radius:999px; background: linear-gradient(135deg, rgba(53,242,255,0.18), rgba(123,75,255,0.28)); border:1px solid var(--line); }
+.model-switch select { flex:1; background: var(--input-bg); color: var(--text); border:1px solid var(--input-border); border-radius:8px; padding:7px 9px; }
 .quick-grid { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:8px; max-height: 220px; overflow:auto; }
 .quick-btn { text-align:left; background: var(--quick-grad); border:1px solid color-mix(in srgb, var(--line) 70%, white 30%); }
 

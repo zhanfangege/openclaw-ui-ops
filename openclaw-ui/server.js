@@ -91,6 +91,14 @@ app.get('/api/models-list', async (_req, res) => {
   res.json(out);
 });
 
+app.get('/api/models-candidates', async (_req, res) => {
+  const out = await runCommand('openclaw models list');
+  const text = stripAnsi(out.output || '');
+  const matches = (text.match(/[a-zA-Z0-9._-]+\/[a-zA-Z0-9._:@-]+/g) || []);
+  const models = [...new Set(matches)].slice(0, 200);
+  res.json({ ok: true, models, rawOk: out.ok });
+});
+
 app.get('/api/board', async (_req, res) => {
   const [ver, node, gateway, sessions, subagents, uptime, mem] = await Promise.all([
     runCommand('openclaw --version || openclaw version || echo unknown'),
