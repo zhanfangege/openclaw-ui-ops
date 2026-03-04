@@ -4,7 +4,6 @@ const autoRefreshEl = $('autoRefresh');
 const quickWrap = $('quickCommands');
 const modelInputEl = $('modelInput');
 const applyModelEl = $('applyModel');
-const modelsListEl = $('modelsList');
 const modelPresetsEl = $('modelPresets');
 const trendCanvas = $('trendCanvas');
 const boardTimeEl = $('boardTime');
@@ -139,7 +138,6 @@ async function loadAll() {
   setAndScroll('subagents', (board.panorama?.subagents || subagents.output || 'No subagents running').trim());
 
   const modelRaw = (models.output || '');
-  setAndScroll('modelsList', modelRaw.split('\n').slice(0, 8).join('\n'));
   renderModelPresets(modelRaw);
 
   setKpi('kpi-openclaw', board.kpi?.openclawVersion);
