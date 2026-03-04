@@ -1,5 +1,7 @@
 # Weekly Agent Optimization Review
 
+> Run first: `node scripts/weekly-kpi.js`
+
 ## 1) KPI Snapshot
 - Task success rate:
 - First-pass success rate:
