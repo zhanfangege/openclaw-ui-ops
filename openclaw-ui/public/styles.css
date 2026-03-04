@@ -79,11 +79,13 @@ h2 { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.6px; text-transform: up
 
 .cmdbar { margin-bottom: 8px; }
 #terminal { height: calc(100% - 34px); border-radius: 8px; border: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 75%, #000 25%); padding: 6px; }
+#terminal .xterm-viewport { overflow: hidden !important; }
+#terminal .xterm-scroll-area { display: none !important; }
 
 .cards.two.compact { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:8px; height: calc(100% - 24px); }
 article { background: color-mix(in srgb, var(--panel) 80%, #000 20%); border: 1px solid var(--line); border-radius: 9px; padding: 8px; overflow: hidden; }
 article h3 { margin:0 0 6px; font-size:11px; color: var(--cyan); text-transform: uppercase; }
-pre { margin:0; font-size:11px; line-height:1.35; white-space: pre-wrap; word-break: break-word; max-height: 150px; overflow:auto; }
+pre { margin:0; font-size:11px; line-height:1.35; white-space: pre-wrap; word-break: break-word; max-height: 150px; overflow:hidden; }
 
 @media (max-width: 1200px) {
   body { overflow:auto; height:auto; }

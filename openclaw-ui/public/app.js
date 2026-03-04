@@ -9,7 +9,7 @@ const successRateEl = $('successRate');
 const loadWarnEl = $('loadWarn');
 const memWarnEl = $('memWarn');
 const saveThresholdsEl = $('saveThresholds');
-const term = new window.Terminal({ convertEol: true, cursorBlink: true, disableStdin: true, theme: { background: '#050a15' } });
+const term = new window.Terminal({ convertEol: true, cursorBlink: true, disableStdin: true, scrollback: 0, theme: { background: '#050a15' } });
 term.open($('terminal'));
 
 let ws;
@@ -93,8 +93,9 @@ function setKpi(id, value) { const el = $(id); if (el) el.textContent = value ||
 function setAndScroll(id, text) {
   const el = $(id);
   if (!el) return;
-  el.textContent = text;
-  el.scrollTop = el.scrollHeight;
+  const lines = String(text || '').split('\n');
+  const latest = lines.slice(-24).join('\n');
+  el.textContent = latest;
 }
 
 async function loadAll() {
