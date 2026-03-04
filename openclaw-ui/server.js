@@ -67,6 +67,16 @@ function runCommand(command) {
   });
 }
 
+function stripAnsi(text = '') {
+  return text.replace(/\u001b\[[0-9;]*m/g, '').replace(/\r/g, '');
+}
+
+function countDataRows(text = '') {
+  const lines = stripAnsi(text).split('\n').map((x) => x.trim()).filter(Boolean);
+  const data = lines.filter((line) => !/^[-─|+]+$/.test(line) && !/^(id|name|status|session|subagent)/i.test(line));
+  return Math.max(data.length - 1, 0);
+}
+
 app.use((req, res, next) => {
   if (!authed(req)) return res.status(401).json({ ok: false, error: 'unauthorized' });
   next();
@@ -77,26 +87,41 @@ app.get('/api/quick-commands', (_req, res) => {
 });
 
 app.get('/api/board', async (_req, res) => {
-  const [ver, node, gateway, sessions, subagents] = await Promise.all([
+  const [ver, node, gateway, sessions, subagents, uptime, mem] = await Promise.all([
     runCommand('openclaw --version || openclaw version || echo unknown'),
     runCommand('node -v'),
-    runCommand('openclaw gateway status | head -n 20'),
+    runCommand('openclaw gateway status | head -n 30'),
     runCommand('openclaw sessions list --limit 100'),
-    runCommand('openclaw subagents list --recent-minutes 120')
+    runCommand('openclaw subagents list --recent-minutes 120'),
+    runCommand('uptime'),
+    runCommand("free -m 2>/dev/null | awk 'NR==2{printf \"%s/%s MB\",$3,$2}' || echo n/a")
   ]);
 
-  const activeSessions = (sessions.output.match(/sessionKey|session key|active/gi) || []).length;
-  const activeSubagents = (subagents.output.match(/running|active|in_progress/gi) || []).length;
-  const gatewayUp = /running|online|active|ok/i.test(gateway.output);
+  const sessionsText = stripAnsi(sessions.output);
+  const subagentsText = stripAnsi(subagents.output);
+  const gatewayText = stripAnsi(gateway.output);
+
+  const activeSessions = countDataRows(sessionsText);
+  const activeSubagents = countDataRows(subagentsText);
+  const gatewayUp = /running|online|active|ok/i.test(gatewayText);
+  const doctorFlag = /error|failed|critical/i.test(gatewayText) ? 'WARN' : 'OK';
 
   res.json({
     ok: true,
     kpi: {
-      openclawVersion: ver.output.trim().split('\n').slice(-1)[0] || 'unknown',
-      nodeVersion: node.output.trim(),
+      openclawVersion: stripAnsi(ver.output).trim().split('\n').slice(-1)[0] || 'unknown',
+      nodeVersion: stripAnsi(node.output).trim(),
       gatewayStatus: gatewayUp ? 'ONLINE' : 'CHECK',
       sessionsApprox: activeSessions,
-      subagentsApprox: activeSubagents
+      subagentsApprox: activeSubagents,
+      uptime: stripAnsi(uptime.output).trim(),
+      memory: stripAnsi(mem.output).trim(),
+      health: doctorFlag
+    },
+    panorama: {
+      gateway: gatewayText || 'No gateway status output',
+      sessions: sessionsText || 'No sessions running',
+      subagents: subagentsText || 'No subagents running'
     }
   });
 });

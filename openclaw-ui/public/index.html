@@ -7,16 +7,11 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.css" />
     <link rel="stylesheet" href="/styles.css" />
   </head>
-  <body class="theme-cyber">
+  <body>
     <header>
       <h1>OpenClaw NEXUS Console</h1>
       <div class="right">
         <input id="token" type="password" autocomplete="off" placeholder="UI_TOKEN（已隐藏）" />
-        <select id="themeSelect" class="theme-select">
-          <option value="theme-cyber">Theme A · 赛博重度</option>
-          <option value="theme-console">Theme B · 专业控制台</option>
-          <option value="theme-minimal">Theme C · 极简仪表盘</option>
-        </select>
         <label class="switch"><input type="checkbox" id="autoRefresh" checked />自动刷新</label>
         <button id="refresh">刷新</button>
       </div>
@@ -31,6 +26,9 @@
           <div class="kpi" id="kpi-card-gateway"><span>Gateway</span><strong id="kpi-gateway">-</strong></div>
           <div class="kpi" id="kpi-card-sessions"><span>Sessions</span><strong id="kpi-sessions">-</strong></div>
           <div class="kpi" id="kpi-card-subagents"><span>Subagents</span><strong id="kpi-subagents">-</strong></div>
+          <div class="kpi" id="kpi-card-uptime"><span>Uptime</span><strong id="kpi-uptime">-</strong></div>
+          <div class="kpi" id="kpi-card-memory"><span>Memory</span><strong id="kpi-memory">-</strong></div>
+          <div class="kpi" id="kpi-card-health"><span>Health</span><strong id="kpi-health">-</strong></div>
         </div>
         <canvas id="trendCanvas" height="44"></canvas>
       </section>
