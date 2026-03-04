@@ -13,6 +13,7 @@ const server = createServer(app);
 const wss = new WebSocketServer({ server, path: '/ws' });
 
 const PORT = process.env.PORT || 4173;
+const HOST = process.env.HOST || '0.0.0.0';
 const UI_TOKEN = process.env.UI_TOKEN || '';
 const AUDIT_PATH = path.join(process.cwd(), 'audit.log');
 
@@ -147,7 +148,7 @@ wss.on('connection', (ws, req) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`OpenClaw UI running: http://localhost:${PORT}`);
+server.listen(PORT, HOST, () => {
+  console.log(`OpenClaw UI running: http://${HOST}:${PORT}`);
   if (UI_TOKEN) console.log('UI_TOKEN auth enabled');
 });
