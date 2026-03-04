@@ -77,6 +77,29 @@ function countDataRows(text = '') {
   return Math.max(data.length - 1, 0);
 }
 
+const apiCache = {
+  board: { ts: 0, ttl: 8000, data: null, promise: null },
+  alerts: { ts: 0, ttl: 8000, data: null, promise: null },
+  models: { ts: 0, ttl: 60000, data: null, promise: null }
+};
+
+async function withCache(key, producer) {
+  const c = apiCache[key];
+  const now = Date.now();
+  if (c.data && now - c.ts < c.ttl) return c.data;
+  if (c.promise) return c.promise;
+  c.promise = Promise.resolve().then(producer).then((data) => {
+    c.data = data;
+    c.ts = Date.now();
+    c.promise = null;
+    return data;
+  }).catch((e) => {
+    c.promise = null;
+    throw e;
+  });
+  return c.promise;
+}
+
 app.use((req, res, next) => {
   if (!authed(req)) return res.status(401).json({ ok: false, error: 'unauthorized' });
   next();
@@ -92,61 +115,67 @@ app.get('/api/models-list', async (_req, res) => {
 });
 
 app.get('/api/models-candidates', async (_req, res) => {
-  const out = await runCommand('openclaw models list');
-  const text = stripAnsi(out.output || '');
-  const matches = (text.match(/[a-zA-Z0-9._-]+\/[a-zA-Z0-9._:@-]+/g) || []);
-  const models = [...new Set(matches)].slice(0, 200);
-  res.json({ ok: true, models, rawOk: out.ok });
+  const data = await withCache('models', async () => {
+    const out = await runCommand('openclaw models list');
+    const text = stripAnsi(out.output || '');
+    const matches = (text.match(/[a-zA-Z0-9._-]+\/[a-zA-Z0-9._:@-]+/g) || []);
+    const models = [...new Set(matches)].slice(0, 200);
+    return { ok: true, models, rawOk: out.ok };
+  });
+  res.json(data);
 });
 
 app.get('/api/board', async (_req, res) => {
-  const [ver, node, gateway, sessions, subagents, uptime, mem, status, ctx] = await Promise.all([
-    runCommand('openclaw --version || openclaw version || echo unknown'),
-    runCommand('node -v'),
-    runCommand('openclaw gateway status | head -n 30'),
-    runCommand('openclaw sessions list --limit 100 || openclaw sessions list'),
-    runCommand('openclaw subagents list --recent-minutes 120 || openclaw agents list'),
-    runCommand('uptime'),
-    runCommand("free -m 2>/dev/null | awk 'NR==2{printf \"%s/%s MB\",$3,$2}' || echo n/a"),
-    runCommand('openclaw status | head -n 220'),
-    runCommand("bash -lc \"openclaw status --all 2>/dev/null | grep -Eo '[0-9]+(\\.[0-9]+)?[kmg]?/[0-9]+(\\.[0-9]+)?[kmg]? \\\\([^)]*%\\\\)' | head -n1 || true\"")
-  ]);
+  const data = await withCache('board', async () => {
+    const [ver, node, gateway, sessions, subagents, uptime, mem, status, ctx] = await Promise.all([
+      runCommand('openclaw --version || openclaw version || echo unknown'),
+      runCommand('node -v'),
+      runCommand('openclaw gateway status | head -n 30'),
+      runCommand('openclaw sessions list --limit 100 || openclaw sessions list'),
+      runCommand('openclaw subagents list --recent-minutes 120 || openclaw agents list'),
+      runCommand('uptime'),
+      runCommand("free -m 2>/dev/null | awk 'NR==2{printf \"%s/%s MB\",$3,$2}' || echo n/a"),
+      runCommand('openclaw status | head -n 220'),
+      runCommand("bash -lc \"openclaw status --all 2>/dev/null | grep -Eo '[0-9]+(\\.[0-9]+)?[kmg]?/[0-9]+(\\.[0-9]+)?[kmg]? \\\\([^)]*%\\\\)' | head -n1 || true\"")
+    ]);
 
-  const sessionsText = stripAnsi(sessions.output);
-  const subagentsText = stripAnsi(subagents.output);
-  const gatewayText = stripAnsi(gateway.output);
-  const statusText = stripAnsi(status.output);
+    const sessionsText = stripAnsi(sessions.output);
+    const subagentsText = stripAnsi(subagents.output);
+    const gatewayText = stripAnsi(gateway.output);
+    const statusText = stripAnsi(status.output);
 
-  const ctxText = stripAnsi(ctx.output || '').trim();
-  const ctxMatch = statusText.match(/(\d+(?:\.\d+)?[kmg]?\s*\/\s*\d+(?:\.\d+)?[kmg]?\s*\([^\)]*%\))/i)
-    || statusText.match(/(\d+(?:\.\d+)?[kmg]?\s*\/\s*\d+(?:\.\d+)?[kmg]?)/i);
-  const contextUsage = ctxText || (ctxMatch ? ctxMatch[1].replace(/\s+/g, ' ').trim() : 'n/a');
+    const ctxText = stripAnsi(ctx.output || '').trim();
+    const ctxMatch = statusText.match(/(\d+(?:\.\d+)?[kmg]?\s*\/\s*\d+(?:\.\d+)?[kmg]?\s*\([^\)]*%\))/i)
+      || statusText.match(/(\d+(?:\.\d+)?[kmg]?\s*\/\s*\d+(?:\.\d+)?[kmg]?)/i);
+    const contextUsage = ctxText || (ctxMatch ? ctxMatch[1].replace(/\s+/g, ' ').trim() : 'n/a');
 
-  const activeSessions = countDataRows(sessionsText);
-  const activeSubagents = countDataRows(subagentsText);
-  const gatewayUp = /running|online|active|ok/i.test(gatewayText);
-  const doctorFlag = /error|failed|critical/i.test(gatewayText) ? 'WARN' : 'OK';
+    const activeSessions = countDataRows(sessionsText);
+    const activeSubagents = countDataRows(subagentsText);
+    const gatewayUp = /running|online|active|ok/i.test(gatewayText);
+    const doctorFlag = /error|failed|critical/i.test(gatewayText) ? 'WARN' : 'OK';
 
-  res.json({
-    ok: true,
-    kpi: {
-      openclawVersion: stripAnsi(ver.output).trim().split('\n').slice(-1)[0] || 'unknown',
-      nodeVersion: stripAnsi(node.output).trim(),
-      gatewayStatus: gatewayUp ? 'ONLINE' : 'CHECK',
-      sessionsApprox: activeSessions,
-      subagentsApprox: activeSubagents,
-      uptime: stripAnsi(uptime.output).trim(),
-      memory: stripAnsi(mem.output).trim(),
-      contextUsage,
-      health: doctorFlag
-    },
-    panorama: {
-      gateway: gatewayText || 'No gateway status output',
-      sessions: sessionsText || 'No sessions running',
-      subagents: subagentsText || 'No subagents running',
-      status: statusText || 'No openclaw status output'
-    }
+    return {
+      ok: true,
+      kpi: {
+        openclawVersion: stripAnsi(ver.output).trim().split('\n').slice(-1)[0] || 'unknown',
+        nodeVersion: stripAnsi(node.output).trim(),
+        gatewayStatus: gatewayUp ? 'ONLINE' : 'CHECK',
+        sessionsApprox: activeSessions,
+        subagentsApprox: activeSubagents,
+        uptime: stripAnsi(uptime.output).trim(),
+        memory: stripAnsi(mem.output).trim(),
+        contextUsage,
+        health: doctorFlag
+      },
+      panorama: {
+        gateway: gatewayText || 'No gateway status output',
+        sessions: sessionsText || 'No sessions running',
+        subagents: subagentsText || 'No subagents running',
+        status: statusText || 'No openclaw status output'
+      }
+    };
   });
+  res.json(data);
 });
 
 app.get('/api/dashboard', async (_req, res) => {
@@ -179,41 +208,47 @@ app.get('/api/audit', async (_req, res) => {
 app.get('/api/alerts', async (req, res) => {
   const loadWarn = Number(req.query.loadWarn || 8);
   const memWarn = Number(req.query.memWarn || 85);
+  const cacheKey = `alerts:${loadWarn}:${memWarn}`;
+  if (!apiCache[cacheKey]) apiCache[cacheKey] = { ts: 0, ttl: 8000, data: null, promise: null };
 
-  const [gateway, uptime, mem] = await Promise.all([
-    runCommand('openclaw gateway status | head -n 20'),
-    runCommand('uptime'),
-    runCommand("free -m 2>/dev/null | awk 'NR==2{printf \"%s/%s MB\",$3,$2}' || echo n/a")
-  ]);
+  const data = await withCache(cacheKey, async () => {
+    const [gateway, uptime, mem] = await Promise.all([
+      runCommand('openclaw gateway status | head -n 20'),
+      runCommand('uptime'),
+      runCommand("free -m 2>/dev/null | awk 'NR==2{printf \"%s/%s MB\",$3,$2}' || echo n/a")
+    ]);
 
-  const gatewayText = stripAnsi(gateway.output);
-  const uptimeText = stripAnsi(uptime.output);
-  const memText = stripAnsi(mem.output);
+    const gatewayText = stripAnsi(gateway.output);
+    const uptimeText = stripAnsi(uptime.output);
+    const memText = stripAnsi(mem.output);
 
-  const alerts = [];
-  const loadMatch = uptimeText.match(/load average:\s*([0-9.]+)/i);
-  const load1 = loadMatch ? Number(loadMatch[1]) : 0;
-  const memMatch = memText.match(/(\d+)\/(\d+)\s*MB/i);
-  const memPct = memMatch ? (Number(memMatch[1]) / Number(memMatch[2])) * 100 : 0;
+    const alerts = [];
+    const loadMatch = uptimeText.match(/load average:\s*([0-9.]+)/i);
+    const load1 = loadMatch ? Number(loadMatch[1]) : 0;
+    const memMatch = memText.match(/(\d+)\/(\d+)\s*MB/i);
+    const memPct = memMatch ? (Number(memMatch[1]) / Number(memMatch[2])) * 100 : 0;
 
-  const gatewayUp = /running|online|active|ok/i.test(gatewayText);
-  if (!gatewayUp) alerts.push({ level: 'critical', message: 'Gateway 非 ONLINE' });
-  if (load1 >= loadWarn) alerts.push({ level: 'warning', message: `系统负载偏高 (${load1.toFixed(2)} >= ${loadWarn})` });
-  if (memPct >= memWarn) alerts.push({ level: 'warning', message: `内存占用偏高 (${memPct.toFixed(0)}% >= ${memWarn}%)` });
+    const gatewayUp = /running|online|active|ok/i.test(gatewayText);
+    if (!gatewayUp) alerts.push({ level: 'critical', message: 'Gateway 非 ONLINE' });
+    if (load1 >= loadWarn) alerts.push({ level: 'warning', message: `系统负载偏高 (${load1.toFixed(2)} >= ${loadWarn})` });
+    if (memPct >= memWarn) alerts.push({ level: 'warning', message: `内存占用偏高 (${memPct.toFixed(0)}% >= ${memWarn}%)` });
 
-  if (!alerts.length) alerts.push({ level: 'ok', message: '系统状态正常' });
+    if (!alerts.length) alerts.push({ level: 'ok', message: '系统状态正常' });
 
-  let successRate = 100;
-  try {
-    const txt = await fs.promises.readFile(AUDIT_PATH, 'utf8');
-    const rows = txt.trim().split('\n').map((x) => JSON.parse(x)).filter((x) => x.event === 'command_exit').slice(-50);
-    if (rows.length) {
-      const ok = rows.filter((x) => Number(x.exitCode) === 0).length;
-      successRate = Math.round((ok / rows.length) * 100);
-    }
-  } catch {}
+    let successRate = 100;
+    try {
+      const txt = await fs.promises.readFile(AUDIT_PATH, 'utf8');
+      const rows = txt.trim().split('\n').map((x) => JSON.parse(x)).filter((x) => x.event === 'command_exit').slice(-50);
+      if (rows.length) {
+        const ok = rows.filter((x) => Number(x.exitCode) === 0).length;
+        successRate = Math.round((ok / rows.length) * 100);
+      }
+    } catch {}
 
-  res.json({ ok: true, alerts, successRate, load1, memPct: Number.isFinite(memPct) ? Math.round(memPct) : 0, thresholds: { loadWarn, memWarn } });
+    return { ok: true, alerts, successRate, load1, memPct: Number.isFinite(memPct) ? Math.round(memPct) : 0, thresholds: { loadWarn, memWarn } };
+  });
+
+  res.json(data);
 });
 
 wss.on('connection', (ws, req) => {

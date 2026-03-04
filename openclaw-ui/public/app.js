@@ -18,6 +18,7 @@ let ws;
 let commands = {};
 let refreshTimer = null;
 let running = false;
+let modelsLoaded = false;
 const trend = [];
 
 function authHeaders() {
@@ -120,25 +121,19 @@ function setAndScroll(id, text) {
 }
 
 async function loadAll() {
-  const [dash, sessions, subagents, quick, board, alerts, candidates] = await Promise.all([
-    loadJson('/api/dashboard'),
-    loadJson('/api/sessions'),
-    loadJson('/api/subagents'),
+  const [quick, board, alerts] = await Promise.all([
     loadJson('/api/quick-commands'),
     loadJson('/api/board'),
-    loadJson(alertsPath()),
-    loadJson('/api/models-candidates')
+    loadJson(alertsPath())
   ]);
 
   commands = quick.commands || {};
   renderQuickCommands();
 
-  setAndScroll('gateway', `${dash.gateway?.ok ? '✅' : '❌'}\n${(board.panorama?.gateway || dash.gateway?.output || '').trim()}`);
-  setAndScroll('claw', `${dash.claw?.ok ? '✅' : '❌'}\n${dash.claw?.output || ''}`);
-  setAndScroll('sessions', (board.panorama?.sessions || sessions.output || 'No sessions running').trim());
-  setAndScroll('subagents', (board.panorama?.subagents || subagents.output || 'No subagents running').trim());
-
-  renderModelOptions(candidates.models || []);
+  setAndScroll('gateway', (board.panorama?.gateway || 'No gateway status output').trim());
+  setAndScroll('claw', (board.panorama?.status || 'No openclaw status output').trim());
+  setAndScroll('sessions', (board.panorama?.sessions || 'No sessions running').trim());
+  setAndScroll('subagents', (board.panorama?.subagents || 'No subagents running').trim());
 
   setKpi('kpi-openclaw', board.kpi?.openclawVersion);
   setKpi('kpi-node', board.kpi?.nodeVersion);
@@ -175,6 +170,13 @@ async function loadAll() {
   successRateEl.textContent = `${alerts.successRate ?? 100}%`;
 
   boardTimeEl.textContent = new Date().toLocaleTimeString();
+}
+
+async function loadModelCandidatesOnce(force = false) {
+  if (modelsLoaded && !force) return;
+  const candidates = await loadJson('/api/models-candidates');
+  renderModelOptions(candidates.models || []);
+  modelsLoaded = true;
 }
 
 function startAutoRefresh() {
@@ -215,7 +217,7 @@ function connectWs() {
   };
 }
 
-$('refresh').onclick = async () => { connectWs(); await loadAll(); };
+$('refresh').onclick = async () => { connectWs(); await loadModelCandidatesOnce(true); await loadAll(); };
 $('stop').onclick = () => ws?.send(JSON.stringify({ type: 'pty-stop' }));
 autoRefreshEl.onchange = () => startAutoRefresh();
 applyModelEl.onclick = () => {
@@ -236,6 +238,7 @@ try {
 } catch {}
 
 connectWs();
+loadModelCandidatesOnce().catch(() => {});
 loadAll();
 startAutoRefresh();
 window.addEventListener('resize', renderTrend);
