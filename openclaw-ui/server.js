@@ -23,7 +23,17 @@ const QUICK_COMMANDS = {
   'openclaw-status': { label: 'OpenClaw 状态', command: 'openclaw status', group: 'OpenClaw' },
   'sessions-list': { label: 'Sessions 列表', command: 'openclaw sessions list --limit 30', group: 'OpenClaw' },
   'subagents-list': { label: 'Subagents 列表', command: 'openclaw subagents list --recent-minutes 120', group: 'OpenClaw' },
-  'doctor': { label: 'OpenClaw Doctor', command: 'openclaw doctor', group: '诊断' }
+  'doctor': { label: 'Doctor 诊断', command: 'openclaw doctor', group: '诊断' },
+  'check-update': {
+    label: '检查更新',
+    command: "bash -lc 'openclaw update --check 2>/dev/null || openclaw upgrade --check 2>/dev/null || (echo update-check-not-supported; openclaw --version)'",
+    group: '维护'
+  },
+  'run-update': {
+    label: '执行更新',
+    command: "bash -lc 'openclaw update -y 2>/dev/null || openclaw upgrade -y 2>/dev/null || echo update-not-supported-in-this-build'",
+    group: '维护'
+  }
 };
 
 const server = SSL_KEY_PATH && SSL_CERT_PATH
@@ -48,6 +58,15 @@ function audit(event, payload = {}) {
   fs.appendFile(AUDIT_PATH, `${line}\n`, () => {});
 }
 
+function runCommand(command) {
+  return new Promise((resolve) => {
+    const p = pty.spawn('bash', ['-lc', command], { name: 'xterm-color', cols: 120, rows: 30, cwd: process.cwd(), env: process.env });
+    let out = '';
+    p.onData((d) => { out += d; });
+    p.onExit(({ exitCode }) => resolve({ ok: exitCode === 0, output: out, exitCode }));
+  });
+}
+
 app.use((req, res, next) => {
   if (!authed(req)) return res.status(401).json({ ok: false, error: 'unauthorized' });
   next();
@@ -57,43 +76,52 @@ app.get('/api/quick-commands', (_req, res) => {
   res.json({ ok: true, commands: QUICK_COMMANDS });
 });
 
-app.get('/api/dashboard', async (_req, res) => {
-  const command = (key) => QUICK_COMMANDS[key].command;
-  const run = (cmd) => new Promise((resolve) => {
-    const p = pty.spawn('bash', ['-lc', cmd], { name: 'xterm-color', cols: 120, rows: 30, cwd: process.cwd(), env: process.env });
-    let out = '';
-    p.onData((d) => { out += d; });
-    p.onExit(({ exitCode }) => resolve({ ok: exitCode === 0, output: out, exitCode }));
-  });
+app.get('/api/board', async (_req, res) => {
+  const [ver, node, gateway, sessions, subagents] = await Promise.all([
+    runCommand('openclaw --version || openclaw version || echo unknown'),
+    runCommand('node -v'),
+    runCommand('openclaw gateway status | head -n 20'),
+    runCommand('openclaw sessions list --limit 100'),
+    runCommand('openclaw subagents list --recent-minutes 120')
+  ]);
 
+  const activeSessions = (sessions.output.match(/sessionKey|session key|active/gi) || []).length;
+  const activeSubagents = (subagents.output.match(/running|active|in_progress/gi) || []).length;
+  const gatewayUp = /running|online|active|ok/i.test(gateway.output);
+
+  res.json({
+    ok: true,
+    kpi: {
+      openclawVersion: ver.output.trim().split('\n').slice(-1)[0] || 'unknown',
+      nodeVersion: node.output.trim(),
+      gatewayStatus: gatewayUp ? 'ONLINE' : 'CHECK',
+      sessionsApprox: activeSessions,
+      subagentsApprox: activeSubagents
+    }
+  });
+});
+
+app.get('/api/dashboard', async (_req, res) => {
   const [gateway, claw, uptime] = await Promise.all([
-    run(command('gateway-status')),
-    run(command('openclaw-status')),
-    run('uptime')
+    runCommand(QUICK_COMMANDS['gateway-status'].command),
+    runCommand(QUICK_COMMANDS['openclaw-status'].command),
+    runCommand('uptime')
   ]);
   res.json({ gateway, claw, uptime, at: new Date().toISOString() });
 });
 
 app.get('/api/sessions', async (_req, res) => {
-  const cmd = QUICK_COMMANDS['sessions-list'].command;
-  const p = pty.spawn('bash', ['-lc', cmd], { name: 'xterm-color', cols: 120, rows: 30, cwd: process.cwd(), env: process.env });
-  let out = '';
-  p.onData((d) => { out += d; });
-  p.onExit(({ exitCode }) => res.json({ ok: exitCode === 0, output: out, exitCode }));
+  res.json(await runCommand(QUICK_COMMANDS['sessions-list'].command));
 });
 
 app.get('/api/subagents', async (_req, res) => {
-  const cmd = QUICK_COMMANDS['subagents-list'].command;
-  const p = pty.spawn('bash', ['-lc', cmd], { name: 'xterm-color', cols: 120, rows: 30, cwd: process.cwd(), env: process.env });
-  let out = '';
-  p.onData((d) => { out += d; });
-  p.onExit(({ exitCode }) => res.json({ ok: exitCode === 0, output: out, exitCode }));
+  res.json(await runCommand(QUICK_COMMANDS['subagents-list'].command));
 });
 
 app.get('/api/audit', async (_req, res) => {
   try {
     const txt = await fs.promises.readFile(AUDIT_PATH, 'utf8');
-    const lines = txt.trim().split('\n').slice(-200);
+    const lines = txt.trim().split('\n').slice(-120);
     res.json({ ok: true, lines });
   } catch {
     res.json({ ok: true, lines: [] });
@@ -121,30 +149,20 @@ wss.on('connection', (ws, req) => {
     }
 
     if (msg.type === 'quick-run') {
-      const key = msg.key;
-      const item = QUICK_COMMANDS[key];
+      const item = QUICK_COMMANDS[msg.key];
       if (!item) return ws.send(JSON.stringify({ type: 'error', data: 'unknown command key' }));
+      if (current) { current.kill(); current = null; }
 
-      if (current) {
-        current.kill();
-        current = null;
-      }
-
-      const command = item.command;
-      current = pty.spawn('bash', ['-lc', command], {
-        name: 'xterm-color',
-        cols: 120,
-        rows: 30,
-        cwd: process.cwd(),
-        env: process.env
+      current = pty.spawn('bash', ['-lc', item.command], {
+        name: 'xterm-color', cols: 120, rows: 30, cwd: process.cwd(), env: process.env
       });
 
-      audit('command_start', { key, command, ip: req.socket.remoteAddress || '' });
-      ws.send(JSON.stringify({ type: 'start', data: { command, key, label: item.label } }));
+      audit('command_start', { key: msg.key, command: item.command, ip: req.socket.remoteAddress || '' });
+      ws.send(JSON.stringify({ type: 'start', data: { command: item.command, key: msg.key, label: item.label } }));
 
       current.onData((data) => ws.send(JSON.stringify({ type: 'stdout', data })));
       current.onExit(({ exitCode }) => {
-        audit('command_exit', { key, command, exitCode });
+        audit('command_exit', { key: msg.key, command: item.command, exitCode });
         ws.send(JSON.stringify({ type: 'exit', data: { code: exitCode } }));
         current = null;
       });

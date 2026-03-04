@@ -29,13 +29,15 @@ function renderQuickCommands() {
   });
 }
 
+function setKpi(id, value) { $(id).textContent = value || '-'; }
+
 async function loadAll() {
-  const [dash, sessions, subagents, audit, quick] = await Promise.all([
+  const [dash, sessions, subagents, quick, board] = await Promise.all([
     loadJson('/api/dashboard'),
     loadJson('/api/sessions'),
     loadJson('/api/subagents'),
-    loadJson('/api/audit'),
-    loadJson('/api/quick-commands')
+    loadJson('/api/quick-commands'),
+    loadJson('/api/board')
   ]);
 
   commands = quick.commands || {};
@@ -43,10 +45,14 @@ async function loadAll() {
 
   $('gateway').textContent = `${dash.gateway?.ok ? '✅' : '❌'}\n${dash.gateway?.output || ''}`;
   $('claw').textContent = `${dash.claw?.ok ? '✅' : '❌'}\n${dash.claw?.output || ''}`;
-  $('uptime').textContent = dash.uptime?.output || '';
   $('sessions').textContent = sessions.output || '';
   $('subagents').textContent = subagents.output || '';
-  $('audit').textContent = (audit.lines || []).join('\n');
+
+  setKpi('kpi-openclaw', board.kpi?.openclawVersion);
+  setKpi('kpi-node', board.kpi?.nodeVersion);
+  setKpi('kpi-gateway', board.kpi?.gatewayStatus);
+  setKpi('kpi-sessions', board.kpi?.sessionsApprox);
+  setKpi('kpi-subagents', board.kpi?.subagentsApprox);
 }
 
 function connectWs() {
@@ -63,11 +69,7 @@ function connectWs() {
   };
 }
 
-$('refresh').onclick = async () => {
-  connectWs();
-  await loadAll();
-};
-
+$('refresh').onclick = async () => { connectWs(); await loadAll(); };
 $('stop').onclick = () => ws?.send(JSON.stringify({ type: 'pty-stop' }));
 
 connectWs();

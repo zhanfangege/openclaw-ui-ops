@@ -11,41 +11,42 @@
     <header>
       <h1>OpenClaw NEXUS Console</h1>
       <div class="right">
-        <input id="token" placeholder="UI_TOKEN (可选)" />
+        <input id="token" placeholder="UI_TOKEN" />
         <button id="refresh">刷新</button>
       </div>
     </header>
 
     <main>
-      <section class="panel">
-        <h2>工作状态</h2>
-        <div class="cards">
-          <article><h3>Gateway</h3><pre id="gateway"></pre></article>
-          <article><h3>OpenClaw</h3><pre id="claw"></pre></article>
-          <article><h3>系统</h3><pre id="uptime"></pre></article>
+      <section class="panel board-panel">
+        <h2>运行看板</h2>
+        <div class="kpi-grid">
+          <div class="kpi"><span>OpenClaw</span><strong id="kpi-openclaw">-</strong></div>
+          <div class="kpi"><span>Node.js</span><strong id="kpi-node">-</strong></div>
+          <div class="kpi"><span>Gateway</span><strong id="kpi-gateway">-</strong></div>
+          <div class="kpi"><span>Sessions</span><strong id="kpi-sessions">-</strong></div>
+          <div class="kpi"><span>Subagents</span><strong id="kpi-subagents">-</strong></div>
         </div>
       </section>
 
-      <section class="panel">
+      <section class="panel quick-panel">
         <h2>快捷命令</h2>
         <div id="quickCommands" class="quick-grid"></div>
-        <div class="cmdbar">
-          <button id="stop">停止当前命令</button>
-        </div>
+      </section>
+
+      <section class="panel terminal-panel">
+        <h2>执行输出</h2>
+        <div class="cmdbar"><button id="stop">停止当前命令</button></div>
         <div id="terminal"></div>
       </section>
 
-      <section class="panel">
-        <h2>Sessions / Subagents</h2>
-        <div class="cards two">
+      <section class="panel info-panel">
+        <h2>状态明细</h2>
+        <div class="cards two compact">
+          <article><h3>Gateway</h3><pre id="gateway"></pre></article>
+          <article><h3>OpenClaw</h3><pre id="claw"></pre></article>
           <article><h3>Sessions</h3><pre id="sessions"></pre></article>
           <article><h3>Subagents</h3><pre id="subagents"></pre></article>
         </div>
-      </section>
-
-      <section class="panel">
-        <h2>审计日志</h2>
-        <pre id="audit"></pre>
       </section>
     </main>
 
