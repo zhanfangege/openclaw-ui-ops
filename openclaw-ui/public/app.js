@@ -1,6 +1,8 @@
 const $ = (id) => document.getElementById(id);
 const tokenEl = $('token');
 const autoRefreshEl = $('autoRefresh');
+const refreshIntervalEl = $('refreshInterval');
+const smartRefreshEl = $('smartRefresh');
 const quickWrap = $('quickCommands');
 const modelSelectEl = $('modelSelect');
 const applyModelEl = $('applyModel');
@@ -48,6 +50,7 @@ function setBusy(busy) {
     b.disabled = busy;
     b.classList.toggle('busy', busy);
   });
+  startAutoRefresh();
 }
 
 function applyKpiClass(id, mode) {
@@ -179,12 +182,22 @@ async function loadModelCandidatesOnce(force = false) {
   modelsLoaded = true;
 }
 
+function syncRefreshUi() {
+  refreshIntervalEl.disabled = smartRefreshEl.checked;
+}
+
+function currentRefreshSec() {
+  if (smartRefreshEl.checked) return running ? 10 : 60;
+  return Number(refreshIntervalEl.value || 10);
+}
+
 function startAutoRefresh() {
   if (refreshTimer) clearInterval(refreshTimer);
   if (!autoRefreshEl.checked) return;
+  const sec = currentRefreshSec();
   refreshTimer = setInterval(() => {
-    if (!running) loadAll().catch(() => {});
-  }, 10000);
+    loadAll().catch(() => {});
+  }, sec * 1000);
 }
 
 function connectWs() {
@@ -220,6 +233,15 @@ function connectWs() {
 $('refresh').onclick = async () => { connectWs(); await loadModelCandidatesOnce(true); await loadAll(); };
 $('stop').onclick = () => ws?.send(JSON.stringify({ type: 'pty-stop' }));
 autoRefreshEl.onchange = () => startAutoRefresh();
+smartRefreshEl.onchange = () => {
+  localStorage.setItem('smart-refresh-enabled', smartRefreshEl.checked ? '1' : '0');
+  syncRefreshUi();
+  startAutoRefresh();
+};
+refreshIntervalEl.onchange = () => {
+  localStorage.setItem('refresh-interval-sec', String(refreshIntervalEl.value || '10'));
+  startAutoRefresh();
+};
 applyModelEl.onclick = () => {
   const model = modelSelectEl.value.trim();
   if (!model) return;
@@ -237,8 +259,19 @@ try {
   if (saved.memWarn) memWarnEl.value = saved.memWarn;
 } catch {}
 
+try {
+  const sec = localStorage.getItem('refresh-interval-sec');
+  if (sec && ['10', '30', '60'].includes(sec)) refreshIntervalEl.value = sec;
+} catch {}
+
+try {
+  const smart = localStorage.getItem('smart-refresh-enabled');
+  if (smart === '0') smartRefreshEl.checked = false;
+} catch {}
+
 connectWs();
 loadModelCandidatesOnce().catch(() => {});
 loadAll();
+syncRefreshUi();
 startAutoRefresh();
 window.addEventListener('resize', renderTrend);
