@@ -75,14 +75,18 @@ h2 { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.6px; text-transform: up
 @keyframes pulse { 0%{ box-shadow:0 0 0 0 rgba(255,88,122,.45);} 100%{ box-shadow:0 0 0 8px rgba(255,88,122,0);} }
 
 .model-switch { display:flex; gap:8px; margin-bottom:6px; }
-.model-switch select { flex:1; background: var(--input-bg); color: var(--text); border:1px solid var(--input-border); border-radius:8px; padding:7px 9px; }
+.model-switch select { flex:1; background: var(--input-bg); color: var(--text); border:1px solid var(--input-border); border-radius:8px; padding:7px 9px; appearance:none; }
+.model-switch select option { background:#0b1126; color:#d7e3ff; }
 .quick-grid { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:8px; max-height: 220px; overflow:auto; }
 .quick-btn { text-align:left; background: var(--quick-grad); border:1px solid color-mix(in srgb, var(--line) 70%, white 30%); }
 
 .cmdbar { margin-bottom: 8px; }
 #terminal { height: calc(100% - 34px); border-radius: 8px; border: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 75%, #000 25%); padding: 6px; }
-#terminal .xterm-viewport { overflow: hidden !important; }
-#terminal .xterm-scroll-area { display: none !important; }
+#terminal .xterm-viewport { overflow-y: auto !important; scrollbar-width: thin; scrollbar-color: #5f7dff #0a1024; }
+#terminal .xterm-viewport::-webkit-scrollbar { width: 10px; }
+#terminal .xterm-viewport::-webkit-scrollbar-track { background: #0a1024; border-radius: 10px; }
+#terminal .xterm-viewport::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #35f2ff, #6f59ff); border-radius: 10px; border: 2px solid #0a1024; }
+#terminal .xterm-scroll-area { display: block !important; }
 
 .cards.two.compact { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:8px; height: calc(100% - 24px); }
 article { background: color-mix(in srgb, var(--panel) 80%, #000 20%); border: 1px solid var(--line); border-radius: 9px; padding: 8px; overflow: hidden; }

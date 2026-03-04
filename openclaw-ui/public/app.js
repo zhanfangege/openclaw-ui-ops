@@ -11,7 +11,7 @@ const successRateEl = $('successRate');
 const loadWarnEl = $('loadWarn');
 const memWarnEl = $('memWarn');
 const saveThresholdsEl = $('saveThresholds');
-const term = new window.Terminal({ convertEol: true, cursorBlink: true, disableStdin: true, scrollback: 0, theme: { background: '#050a15' } });
+const term = new window.Terminal({ convertEol: true, cursorBlink: true, disableStdin: true, scrollback: 3000, theme: { background: '#050a15' } });
 term.open($('terminal'));
 
 let ws;
