@@ -78,10 +78,6 @@ h2 { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.6px; text-transform: up
 
 .model-info-board { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:8px; margin-bottom:6px; }
 .kpi.mini { padding:6px; }
-.models-list { margin:0 0 8px; max-height:72px; overflow:auto; font-size:10px; opacity:.9; scrollbar-width: thin; scrollbar-color: #5f7dff #0a1024; }
-.models-list::-webkit-scrollbar { width: 8px; }
-.models-list::-webkit-scrollbar-track { background: #0a1024; border-radius: 8px; }
-.models-list::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #35f2ff, #6f59ff); border-radius: 8px; }
 .quick-grid { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:8px; max-height: 220px; overflow:auto; }
 .quick-btn { text-align:left; background: var(--quick-grad); border:1px solid color-mix(in srgb, var(--line) 70%, white 30%); }
 

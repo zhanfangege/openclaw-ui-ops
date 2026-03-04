@@ -8,7 +8,6 @@ const modelCurrentEl = $('model-current');
 const modelContextEl = $('model-context');
 const modelCacheEl = $('model-cache');
 const modelSessionKindEl = $('model-session-kind');
-const modelDetailEl = $('model-detail');
 const trendCanvas = $('trendCanvas');
 const boardTimeEl = $('boardTime');
 const alertsEl = $('alerts');
@@ -137,7 +136,6 @@ async function loadAll() {
   modelContextEl.textContent = board.kpi?.contextUsage || modelInfo.tokens;
   modelCacheEl.textContent = board.kpi?.cacheRate || modelInfo.cache;
   modelSessionKindEl.textContent = board.kpi?.sessionKind || modelInfo.kind;
-  modelDetailEl.textContent = modelInfo.raw;
 
   setKpi('kpi-openclaw', board.kpi?.openclawVersion);
   setKpi('kpi-node', board.kpi?.nodeVersion);
