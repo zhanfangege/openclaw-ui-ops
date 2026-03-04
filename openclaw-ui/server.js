@@ -86,6 +86,11 @@ app.get('/api/quick-commands', (_req, res) => {
   res.json({ ok: true, commands: QUICK_COMMANDS });
 });
 
+app.get('/api/models-list', async (_req, res) => {
+  const out = await runCommand('openclaw models list');
+  res.json(out);
+});
+
 app.get('/api/board', async (_req, res) => {
   const [ver, node, gateway, sessions, subagents, uptime, mem] = await Promise.all([
     runCommand('openclaw --version || openclaw version || echo unknown'),
@@ -228,6 +233,29 @@ wss.on('connection', (ws, req) => {
       current.onData((data) => ws.send(JSON.stringify({ type: 'stdout', data })));
       current.onExit(({ exitCode }) => {
         audit('command_exit', { key: msg.key, command: item.command, exitCode });
+        ws.send(JSON.stringify({ type: 'exit', data: { code: exitCode } }));
+        current = null;
+      });
+    }
+
+    if (msg.type === 'model-set') {
+      const model = String(msg.model || '').trim();
+      if (!/^[a-zA-Z0-9._\/-@]{2,120}$/.test(model)) {
+        return ws.send(JSON.stringify({ type: 'error', data: 'invalid model format' }));
+      }
+      if (current) { current.kill(); current = null; }
+
+      const cmd = `openclaw models set ${model} && (openclaw models current 2>/dev/null || openclaw models list)`;
+      current = pty.spawn('bash', ['-lc', cmd], {
+        name: 'xterm-color', cols: 120, rows: 30, cwd: process.cwd(), env: process.env
+      });
+
+      audit('model_set', { model, ip: req.socket.remoteAddress || '' });
+      ws.send(JSON.stringify({ type: 'start', data: { command: cmd, key: 'model-set', label: `切换模型 ${model}` } }));
+
+      current.onData((data) => ws.send(JSON.stringify({ type: 'stdout', data })));
+      current.onExit(({ exitCode }) => {
+        audit('command_exit', { key: 'model-set', command: cmd, exitCode });
         ws.send(JSON.stringify({ type: 'exit', data: { code: exitCode } }));
         current = null;
       });

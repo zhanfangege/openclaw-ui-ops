@@ -74,6 +74,9 @@ h2 { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.6px; text-transform: up
 .thresholds input { width:80px; padding:4px 6px; border-radius:6px; font-size:11px; }
 @keyframes pulse { 0%{ box-shadow:0 0 0 0 rgba(255,88,122,.45);} 100%{ box-shadow:0 0 0 8px rgba(255,88,122,0);} }
 
+.model-switch { display:flex; gap:8px; margin-bottom:6px; }
+.model-switch input { flex:1; }
+.models-list { margin:0 0 8px; max-height:72px; overflow:hidden; font-size:10px; opacity:.9; }
 .quick-grid { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:8px; max-height: 220px; overflow:auto; }
 .quick-btn { text-align:left; background: var(--quick-grad); border:1px solid color-mix(in srgb, var(--line) 70%, white 30%); }
 

@@ -2,6 +2,9 @@ const $ = (id) => document.getElementById(id);
 const tokenEl = $('token');
 const autoRefreshEl = $('autoRefresh');
 const quickWrap = $('quickCommands');
+const modelInputEl = $('modelInput');
+const applyModelEl = $('applyModel');
+const modelsListEl = $('modelsList');
 const trendCanvas = $('trendCanvas');
 const boardTimeEl = $('boardTime');
 const alertsEl = $('alerts');
@@ -99,13 +102,14 @@ function setAndScroll(id, text) {
 }
 
 async function loadAll() {
-  const [dash, sessions, subagents, quick, board, alerts] = await Promise.all([
+  const [dash, sessions, subagents, quick, board, alerts, models] = await Promise.all([
     loadJson('/api/dashboard'),
     loadJson('/api/sessions'),
     loadJson('/api/subagents'),
     loadJson('/api/quick-commands'),
     loadJson('/api/board'),
-    loadJson(alertsPath())
+    loadJson(alertsPath()),
+    loadJson('/api/models-list')
   ]);
 
   commands = quick.commands || {};
@@ -115,6 +119,8 @@ async function loadAll() {
   setAndScroll('claw', `${dash.claw?.ok ? '✅' : '❌'}\n${dash.claw?.output || ''}`);
   setAndScroll('sessions', (board.panorama?.sessions || sessions.output || 'No sessions running').trim());
   setAndScroll('subagents', (board.panorama?.subagents || subagents.output || 'No subagents running').trim());
+
+  setAndScroll('modelsList', (models.output || '').split('\n').slice(0, 8).join('\n'));
 
   setKpi('kpi-openclaw', board.kpi?.openclawVersion);
   setKpi('kpi-node', board.kpi?.nodeVersion);
@@ -192,6 +198,11 @@ function connectWs() {
 $('refresh').onclick = async () => { connectWs(); await loadAll(); };
 $('stop').onclick = () => ws?.send(JSON.stringify({ type: 'pty-stop' }));
 autoRefreshEl.onchange = () => startAutoRefresh();
+applyModelEl.onclick = () => {
+  const model = modelInputEl.value.trim();
+  if (!model) return;
+  ws?.send(JSON.stringify({ type: 'model-set', model }));
+};
 
 saveThresholdsEl.onclick = async () => {
   localStorage.setItem('alert-thresholds', JSON.stringify(getThresholds()));
