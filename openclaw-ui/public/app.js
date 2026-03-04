@@ -4,11 +4,11 @@ const autoRefreshEl = $('autoRefresh');
 const refreshIntervalEl = $('refreshInterval');
 const smartRefreshEl = $('smartRefresh');
 const quickWrap = $('quickCommands');
-const modelConfigTextEl = $('modelConfigText');
-const parseModelConfigEl = $('parseModelConfig');
-const modelHintsEl = $('modelHints');
-const modelSelectEl = $('modelSelect');
-const applyModelEl = $('applyModel');
+const modelCurrentEl = $('model-current');
+const modelContextEl = $('model-context');
+const modelCacheEl = $('model-cache');
+const modelSessionKindEl = $('model-session-kind');
+const modelDetailEl = $('model-detail');
 const trendCanvas = $('trendCanvas');
 const boardTimeEl = $('boardTime');
 const alertsEl = $('alerts');
@@ -23,7 +23,6 @@ let ws;
 let commands = {};
 let refreshTimer = null;
 let running = false;
-let modelsLoaded = false;
 const trend = [];
 
 function authHeaders() {
@@ -99,28 +98,15 @@ function renderQuickCommands() {
 
 function setKpi(id, value) { const el = $(id); if (el) el.textContent = value || '-'; }
 
-function renderModelOptions(models = [], keepCurrent = true) {
-  const current = modelSelectEl.value;
-  modelSelectEl.innerHTML = '';
-  if (!models.length) {
-    const op = document.createElement('option');
-    op.value = '';
-    op.textContent = '未检测到可用模型';
-    modelSelectEl.appendChild(op);
-    return;
-  }
-  models.forEach((m) => {
-    const op = document.createElement('option');
-    op.value = m;
-    op.textContent = m;
-    modelSelectEl.appendChild(op);
-  });
-  if (keepCurrent && current && models.includes(current)) modelSelectEl.value = current;
-}
-
-function extractModelsFromText(text = '') {
-  const list = String(text).match(/[a-zA-Z0-9._-]+\/[a-zA-Z0-9._:@-]+/g) || [];
-  return [...new Set(list)].slice(0, 200);
+function parseModelDetails(statusText = '', fallbackContext = 'n/a') {
+  const lines = String(statusText).split('\n');
+  const direct = lines.find((l) => /agent:main:main/.test(l)) || '';
+  const cells = direct.split('│').map((x) => x.trim()).filter(Boolean);
+  const model = cells[3] || ((statusText.match(/[a-zA-Z0-9._-]+\/[a-zA-Z0-9._:@-]+/) || [])[0] || 'n/a');
+  const tokens = cells[4] || fallbackContext || 'n/a';
+  const cache = (tokens.match(/🗄️\s*\d+%\s*cached/i) || ['n/a'])[0].replace(/\s+/g, ' ');
+  const kind = cells[1] || 'direct';
+  return { model, tokens, cache, kind, raw: lines.slice(0, 20).join('\n') };
 }
 
 function setAndScroll(id, text) {
@@ -145,6 +131,13 @@ async function loadAll() {
   setAndScroll('claw', (board.panorama?.status || 'No openclaw status output').trim());
   setAndScroll('sessions', (board.panorama?.sessions || 'No sessions running').trim());
   setAndScroll('subagents', (board.panorama?.subagents || 'No subagents running').trim());
+
+  const modelInfo = parseModelDetails(board.panorama?.status || '', board.kpi?.contextUsage || 'n/a');
+  modelCurrentEl.textContent = board.kpi?.currentModel || modelInfo.model;
+  modelContextEl.textContent = board.kpi?.contextUsage || modelInfo.tokens;
+  modelCacheEl.textContent = board.kpi?.cacheRate || modelInfo.cache;
+  modelSessionKindEl.textContent = board.kpi?.sessionKind || modelInfo.kind;
+  modelDetailEl.textContent = modelInfo.raw;
 
   setKpi('kpi-openclaw', board.kpi?.openclawVersion);
   setKpi('kpi-node', board.kpi?.nodeVersion);
@@ -181,16 +174,6 @@ async function loadAll() {
   successRateEl.textContent = `${alerts.successRate ?? 100}%`;
 
   boardTimeEl.textContent = new Date().toLocaleTimeString();
-}
-
-async function loadModelCandidatesOnce(force = false) {
-  if (modelsLoaded && !force) return;
-  const candidates = await loadJson('/api/models-candidates');
-  renderModelOptions(candidates.models || []);
-  modelHintsEl.textContent = (candidates.models || []).length
-    ? `已检测当前环境可调用模型 ${(candidates.models || []).length} 个；也可上传配置文件覆盖候选列表。`
-    : '未检测到可调用模型，可上传配置文件识别模型候选。';
-  modelsLoaded = true;
 }
 
 function syncRefreshUi() {
@@ -241,7 +224,7 @@ function connectWs() {
   };
 }
 
-$('refresh').onclick = async () => { connectWs(); await loadModelCandidatesOnce(true); await loadAll(); };
+$('refresh').onclick = async () => { connectWs(); await loadAll(); };
 $('stop').onclick = () => ws?.send(JSON.stringify({ type: 'pty-stop' }));
 autoRefreshEl.onchange = () => startAutoRefresh();
 smartRefreshEl.onchange = () => {
@@ -252,29 +235,6 @@ smartRefreshEl.onchange = () => {
 refreshIntervalEl.onchange = () => {
   localStorage.setItem('refresh-interval-sec', String(refreshIntervalEl.value || '10'));
   startAutoRefresh();
-};
-parseModelConfigEl.onclick = async () => {
-  const raw = (modelConfigTextEl.value || '').trim();
-  if (!raw) {
-    modelHintsEl.textContent = '请先粘贴配置内容。';
-    return;
-  }
-  const cleaned = raw
-    .replace(/\/\/.*$/gm, '')
-    .replace(/\/\*[\s\S]*?\*\//g, '');
-  const models = extractModelsFromText(cleaned);
-  if (!models.length) {
-    modelHintsEl.textContent = '未识别到 provider/model，请检查配置文件内容。';
-    return;
-  }
-  renderModelOptions(models, false);
-  modelHintsEl.textContent = `已从配置识别 ${models.length} 个模型，请手动选择后点击“确认切换模型”。`;
-};
-
-applyModelEl.onclick = () => {
-  const model = modelSelectEl.value.trim();
-  if (!model) return;
-  ws?.send(JSON.stringify({ type: 'model-set', model }));
 };
 
 saveThresholdsEl.onclick = async () => {
@@ -299,7 +259,6 @@ try {
 } catch {}
 
 connectWs();
-loadModelCandidatesOnce().catch(() => {});
 loadAll();
 syncRefreshUi();
 startAutoRefresh();

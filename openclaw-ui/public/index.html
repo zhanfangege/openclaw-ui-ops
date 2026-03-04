@@ -50,16 +50,14 @@
       </section>
 
       <section class="panel quick-panel">
-        <h2>快捷命令 / 模型切换</h2>
-        <div class="model-upload">
-          <textarea id="modelConfigText" placeholder="直接粘贴 openclaw 配置内容（json/jsonc）"></textarea>
-          <button id="parseModelConfig">识别配置模型</button>
+        <h2>快捷命令 / 当前模型信息</h2>
+        <div class="model-info-board">
+          <div class="kpi mini"><span>当前模型</span><strong id="model-current">-</strong></div>
+          <div class="kpi mini"><span>上下文占用</span><strong id="model-context">-</strong></div>
+          <div class="kpi mini"><span>缓存命中</span><strong id="model-cache">-</strong></div>
+          <div class="kpi mini"><span>会话类型</span><strong id="model-session-kind">-</strong></div>
         </div>
-        <div id="modelHints" class="model-hints">可直接粘贴配置内容，先识别模型，再手动确认切换。</div>
-        <div class="model-switch">
-          <select id="modelSelect"></select>
-          <button id="applyModel">确认切换模型</button>
-        </div>
+        <pre id="model-detail" class="models-list"></pre>
         <div id="quickCommands" class="quick-grid"></div>
       </section>
 

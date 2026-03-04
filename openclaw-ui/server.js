@@ -79,8 +79,7 @@ function countDataRows(text = '') {
 
 const apiCache = {
   board: { ts: 0, ttl: 8000, data: null, promise: null },
-  alerts: { ts: 0, ttl: 8000, data: null, promise: null },
-  models: { ts: 0, ttl: 60000, data: null, promise: null }
+  alerts: { ts: 0, ttl: 8000, data: null, promise: null }
 };
 
 async function withCache(key, producer) {
@@ -109,22 +108,6 @@ app.get('/api/quick-commands', (_req, res) => {
   res.json({ ok: true, commands: QUICK_COMMANDS });
 });
 
-app.get('/api/models-list', async (_req, res) => {
-  const out = await runCommand('openclaw models list');
-  res.json(out);
-});
-
-app.get('/api/models-candidates', async (_req, res) => {
-  const data = await withCache('models', async () => {
-    const out = await runCommand('openclaw models list');
-    const text = stripAnsi(out.output || '');
-    const matches = (text.match(/[a-zA-Z0-9._-]+\/[a-zA-Z0-9._:@-]+/g) || []);
-    const models = [...new Set(matches)].slice(0, 200);
-    return { ok: true, models, rawOk: out.ok };
-  });
-  res.json(data);
-});
-
 app.get('/api/board', async (_req, res) => {
   const data = await withCache('board', async () => {
     const [ver, node, gateway, sessions, subagents, uptime, mem, status, ctx] = await Promise.all([
@@ -149,6 +132,12 @@ app.get('/api/board', async (_req, res) => {
       || statusText.match(/(\d+(?:\.\d+)?[kmg]?\s*\/\s*\d+(?:\.\d+)?[kmg]?)/i);
     const contextUsage = ctxText || (ctxMatch ? ctxMatch[1].replace(/\s+/g, ' ').trim() : 'n/a');
 
+    const directLine = statusText.split('\n').find((line) => line.includes('agent:main:main')) || '';
+    const directCells = directLine.split('│').map((x) => x.trim()).filter(Boolean);
+    const currentModel = directCells[3] || ((statusText.match(/[a-zA-Z0-9._-]+\/[a-zA-Z0-9._:@-]+/) || [])[0] || 'n/a');
+    const sessionKind = directCells[1] || 'direct';
+    const cacheRate = ((directCells[4] || '').match(/🗄️\s*\d+%\s*cached/i) || ['n/a'])[0].replace(/\s+/g, ' ');
+
     const activeSessions = countDataRows(sessionsText);
     const activeSubagents = countDataRows(subagentsText);
     const gatewayUp = /running|online|active|ok/i.test(gatewayText);
@@ -165,6 +154,9 @@ app.get('/api/board', async (_req, res) => {
         uptime: stripAnsi(uptime.output).trim(),
         memory: stripAnsi(mem.output).trim(),
         contextUsage,
+        currentModel,
+        cacheRate,
+        sessionKind,
         health: doctorFlag
       },
       panorama: {
@@ -286,29 +278,6 @@ wss.on('connection', (ws, req) => {
       current.onData((data) => ws.send(JSON.stringify({ type: 'stdout', data })));
       current.onExit(({ exitCode }) => {
         audit('command_exit', { key: msg.key, command: item.command, exitCode });
-        ws.send(JSON.stringify({ type: 'exit', data: { code: exitCode } }));
-        current = null;
-      });
-    }
-
-    if (msg.type === 'model-set') {
-      const model = String(msg.model || '').trim();
-      if (!/^[a-zA-Z0-9._\/-@]{2,120}$/.test(model)) {
-        return ws.send(JSON.stringify({ type: 'error', data: 'invalid model format' }));
-      }
-      if (current) { current.kill(); current = null; }
-
-      const cmd = `openclaw models set ${model} && (openclaw models current 2>/dev/null || openclaw models list)`;
-      current = pty.spawn('bash', ['-lc', cmd], {
-        name: 'xterm-color', cols: 120, rows: 30, cwd: process.cwd(), env: process.env
-      });
-
-      audit('model_set', { model, ip: req.socket.remoteAddress || '' });
-      ws.send(JSON.stringify({ type: 'start', data: { command: cmd, key: 'model-set', label: `切换模型 ${model}` } }));
-
-      current.onData((data) => ws.send(JSON.stringify({ type: 'stdout', data })));
-      current.onExit(({ exitCode }) => {
-        audit('command_exit', { key: 'model-set', command: cmd, exitCode });
         ws.send(JSON.stringify({ type: 'exit', data: { code: exitCode } }));
         current = null;
       });
