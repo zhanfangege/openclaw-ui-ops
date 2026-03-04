@@ -1,5 +1,6 @@
 import express from 'express';
-import { createServer } from 'http';
+import { createServer as createHttpServer } from 'http';
+import { createServer as createHttpsServer } from 'https';
 import { WebSocketServer } from 'ws';
 import { exec as execCb } from 'child_process';
 import { promisify } from 'util';
@@ -9,13 +10,22 @@ import pty from 'node-pty';
 
 const exec = promisify(execCb);
 const app = express();
-const server = createServer(app);
-const wss = new WebSocketServer({ server, path: '/ws' });
 
 const PORT = process.env.PORT || 4173;
 const HOST = process.env.HOST || '0.0.0.0';
 const UI_TOKEN = process.env.UI_TOKEN || '';
 const AUDIT_PATH = path.join(process.cwd(), 'audit.log');
+const SSL_KEY_PATH = process.env.SSL_KEY_PATH || '';
+const SSL_CERT_PATH = process.env.SSL_CERT_PATH || '';
+
+const server = SSL_KEY_PATH && SSL_CERT_PATH
+  ? createHttpsServer({
+      key: fs.readFileSync(SSL_KEY_PATH),
+      cert: fs.readFileSync(SSL_CERT_PATH)
+    }, app)
+  : createHttpServer(app);
+
+const wss = new WebSocketServer({ server, path: '/ws' });
 
 app.use(express.json());
 app.use(express.static('public'));
@@ -149,6 +159,7 @@ wss.on('connection', (ws, req) => {
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`OpenClaw UI running: http://${HOST}:${PORT}`);
+  const proto = SSL_KEY_PATH && SSL_CERT_PATH ? 'https' : 'http';
+  console.log(`OpenClaw UI running: ${proto}://${HOST}:${PORT}`);
   if (UI_TOKEN) console.log('UI_TOKEN auth enabled');
 });
