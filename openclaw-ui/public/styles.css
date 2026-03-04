@@ -92,7 +92,10 @@ h2 { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.6px; text-transform: up
 .cards.two.compact { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:8px; height: calc(100% - 24px); }
 article { background: color-mix(in srgb, var(--panel) 80%, #000 20%); border: 1px solid var(--line); border-radius: 9px; padding: 8px; overflow: hidden; }
 article h3 { margin:0 0 6px; font-size:11px; color: var(--cyan); text-transform: uppercase; }
-pre { margin:0; font-size:11px; line-height:1.35; white-space: pre-wrap; word-break: break-word; max-height: 150px; overflow:hidden; }
+pre { margin:0; font-size:11px; line-height:1.35; white-space: pre-wrap; word-break: break-word; max-height: 150px; overflow:auto; scrollbar-width: thin; scrollbar-color: #5f7dff #0a1024; }
+pre::-webkit-scrollbar { width: 8px; }
+pre::-webkit-scrollbar-track { background: #0a1024; border-radius: 8px; }
+pre::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #35f2ff, #6f59ff); border-radius: 8px; }
 
 @media (max-width: 1200px) {
   body { overflow:auto; height:auto; }

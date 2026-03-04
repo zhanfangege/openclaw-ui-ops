@@ -111,9 +111,8 @@ function parseModelDetails(statusText = '', fallbackContext = 'n/a') {
 function setAndScroll(id, text) {
   const el = $(id);
   if (!el) return;
-  const lines = String(text || '').split('\n');
-  const latest = lines.slice(-24).join('\n');
-  el.textContent = latest;
+  el.textContent = String(text || '');
+  el.scrollTop = el.scrollHeight;
 }
 
 async function loadAll() {
