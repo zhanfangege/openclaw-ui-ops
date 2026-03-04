@@ -1,5 +1,6 @@
 const $ = (id) => document.getElementById(id);
 const tokenEl = $('token');
+const themeSelectEl = $('themeSelect');
 const autoRefreshEl = $('autoRefresh');
 const quickWrap = $('quickCommands');
 const trendCanvas = $('trendCanvas');
@@ -12,6 +13,12 @@ let commands = {};
 let refreshTimer = null;
 let running = false;
 const trend = [];
+
+function applyTheme(theme) {
+  document.body.classList.remove('theme-cyber', 'theme-console', 'theme-minimal');
+  document.body.classList.add(theme);
+  localStorage.setItem('ui-theme', theme);
+}
 
 function authHeaders() {
   const token = tokenEl.value.trim();
@@ -145,6 +152,11 @@ function connectWs() {
 $('refresh').onclick = async () => { connectWs(); await loadAll(); };
 $('stop').onclick = () => ws?.send(JSON.stringify({ type: 'pty-stop' }));
 autoRefreshEl.onchange = () => startAutoRefresh();
+
+themeSelectEl.onchange = () => applyTheme(themeSelectEl.value);
+const savedTheme = localStorage.getItem('ui-theme') || 'theme-cyber';
+themeSelectEl.value = savedTheme;
+applyTheme(savedTheme);
 
 connectWs();
 loadAll();
