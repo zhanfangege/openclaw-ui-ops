@@ -3,3 +3,6 @@ node_modules/
 certs/
 ui.log
 audit.log
+
+certs/*.key
+certs/ui.key
