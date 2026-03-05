@@ -68,12 +68,25 @@ PORT=18790 HOST=0.0.0.0 npm start
 
 ### 3.3 Token 鉴权配置（推荐）
 
+方式 A：直接通过环境变量启动
+
 ```bash
 cd openclaw-ui
 UI_TOKEN='replace-with-a-strong-random-token' PORT=18790 HOST=0.0.0.0 npm start
 ```
 
+方式 B：使用配置文件（推荐长期维护）
+
+```bash
+cd openclaw-ui
+cp .env.example .env
+# 编辑 .env，把 UI_TOKEN 改成你的强随机值
+set -a; source .env; set +a
+npm start
+```
+
 说明：
+- 参数模板见：`openclaw-ui/.env.example`
 - 设置 `UI_TOKEN` 后，请在页面右上角输入相同 token。
 - 未携带或错误 token 的 API 请求会返回 `401 unauthorized`。
 
@@ -162,9 +175,6 @@ nohup ./scripts/watchdog-loop.sh > runtime/watchdog-loop.nohup.log 2>&1 &
 ### Q2: 手机显示错位？
 - 强制刷新缓存（或无痕模式）
 - 确认版本已更新到最新提交
-
-### Q3: 为什么 push GitHub 失败？
-- 建议用 SSH key 免登录方案（一次配置，长期可用）
 
 ---
 

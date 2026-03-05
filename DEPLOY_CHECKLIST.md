@@ -37,12 +37,21 @@ npm ci
 
 ## 3) 配置 Token（强烈建议）
 
-### Linux/macOS
+### Linux/macOS（环境变量方式）
 
 ```bash
 export UI_TOKEN='replace-with-a-strong-random-token'
 export PORT=18790
 export HOST=0.0.0.0
+npm start
+```
+
+### Linux/macOS（配置文件方式）
+
+```bash
+cp .env.example .env
+# 编辑 .env
+set -a; source .env; set +a
 npm start
 ```
 

@@ -31,10 +31,9 @@ Operations toolkit and web console for OpenClaw, including a standalone dashboar
 ## What is included
 
 - `openclaw-ui/` — standalone web console (Express + WebSocket + PTY)
-- `bin/` — operations scripts (watchdog, recovery, checks, proxy helpers)
+- `openclaw-ui/scripts/` — bundled start/watchdog scripts
 - `deploy/` — deployment playbooks
-- `ops/` — runtime logs and ops policies
-- `memory/` — daily decision and execution records
+- `docs/` — architecture and showcase assets
 
 ---
 
@@ -59,12 +58,25 @@ PORT=18790 HOST=0.0.0.0 npm start
 
 ## Token auth setup (recommended)
 
+Option A: environment variables
+
 ```bash
 cd openclaw-ui
 UI_TOKEN='replace-with-a-strong-random-token' PORT=18790 HOST=0.0.0.0 npm start
 ```
 
+Option B: config file workflow
+
+```bash
+cd openclaw-ui
+cp .env.example .env
+# edit UI_TOKEN in .env
+set -a; source .env; set +a
+npm start
+```
+
 Notes:
+- Template file: `openclaw-ui/.env.example`
 - When `UI_TOKEN` is enabled, enter the same token in the top-right token field.
 - Requests without valid token will return `401 unauthorized`.
 
@@ -111,9 +123,9 @@ services:
 
 ## Auto-recovery scripts
 
-- `bin/openclaw_ui_start.sh`
-- `bin/openclaw_ui_watchdog.sh`
-- `bin/openclaw_ui_watchdog_loop.sh`
+- `openclaw-ui/scripts/start.sh`
+- `openclaw-ui/scripts/watchdog.sh`
+- `openclaw-ui/scripts/watchdog-loop.sh`
 
 ---
 

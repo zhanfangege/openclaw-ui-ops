@@ -69,6 +69,16 @@ cd openclaw-ui
 UI_TOKEN='your-strong-token' PORT=18790 HOST=0.0.0.0 npm start
 ```
 
+或使用配置文件：
+
+```bash
+cd openclaw-ui
+cp .env.example .env
+# 编辑 UI_TOKEN
+set -a; source .env; set +a
+npm start
+```
+
 前端请求会带 `x-ui-token` 请求头。
 
 ---
