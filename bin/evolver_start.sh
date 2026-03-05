@@ -14,6 +14,19 @@ fi
 
 cd "$BASE"
 export EVOLVE_STRATEGY="${EVOLVE_STRATEGY:-harden}"
+export A2A_HUB_URL="${A2A_HUB_URL:-https://evomap.ai}"
+
+# Stable device identity for container restarts
+DEVICE_FILE="$LOGDIR/evomap_device_id"
+if [[ -z "${EVOMAP_DEVICE_ID:-}" ]]; then
+  if [[ -f "$DEVICE_FILE" ]]; then
+    export EVOMAP_DEVICE_ID="$(cat "$DEVICE_FILE")"
+  else
+    RAW_ID="$(cat /etc/machine-id 2>/dev/null || hostname || date +%s)"
+    export EVOMAP_DEVICE_ID="$(printf '%s' "$RAW_ID" | md5sum | awk '{print $1}')"
+    echo "$EVOMAP_DEVICE_ID" > "$DEVICE_FILE"
+  fi
+fi
 nohup node "$EVO/index.js" --loop >> "$LOGFILE" 2>&1 &
 PID=$!
 echo "$PID" > "$PIDFILE"
