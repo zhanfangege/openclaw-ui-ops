@@ -23,8 +23,6 @@ Operations toolkit and web console for OpenClaw, including a standalone dashboar
   <img src="./docs/assets/screenshots/mobile-4.jpg" width="24%" />
 </p>
 
-### Demo placeholder (replace with GIF later)
-![demo](./docs/assets/quick-command-demo.svg)
 
 > Goal: provide a single visual entrypoint for runtime status, sessions/subagents monitoring, quick ops commands, and audit logs.
 

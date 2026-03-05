@@ -25,8 +25,6 @@ OpenClaw 运维与控制台项目（含独立 Web 看板 `openclaw-ui`）。
   <img src="./docs/assets/screenshots/mobile-4.jpg" width="24%" />
 </p>
 
-### 演示占位图（待替换 GIF）
-![demo](./docs/assets/quick-command-demo.svg)
 
 > 目标：把 OpenClaw 的运行状态、会话执行、快捷运维命令、审计日志集中到一个可视化入口，支持桌面与手机访问。
 

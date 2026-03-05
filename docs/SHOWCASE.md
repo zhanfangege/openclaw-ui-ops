@@ -13,7 +13,7 @@ Place assets under `docs/assets/` and `docs/assets/screenshots/`:
 - `screenshots/mobile-2.jpg`
 - `screenshots/mobile-3.jpg`
 - `screenshots/mobile-4.jpg`
-- `quick-command-demo.svg` (placeholder, can be replaced by GIF)
+- （可选）`quick-command-demo.gif`：快捷命令演示动图
 
 ## Capture suggestions
 
