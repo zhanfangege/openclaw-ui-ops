@@ -10,6 +10,8 @@
 !ROADMAP.md
 !RELEASE_NOTES_v0.1.0.md
 !DEPLOY_CHECKLIST.md
+!releases/
+!releases/**
 !openclaw-ui/
 !openclaw-ui/**
 !docs/
