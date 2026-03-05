@@ -125,6 +125,21 @@ docker compose up -d
 
 ---
 
+## Downloadable release assets
+
+A ready-to-download release package is included in `releases/`:
+
+- `releases/openclaw-ui-ops-v0.1.0.tar.gz`
+- `releases/openclaw-ui-ops-v0.1.0.sha256`
+
+Checksum verification:
+
+```bash
+sha256sum -c releases/openclaw-ui-ops-v0.1.0.sha256
+```
+
+---
+
 ## Documentation
 
 - Chinese README: `README.md`

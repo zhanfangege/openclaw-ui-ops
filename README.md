@@ -146,7 +146,22 @@ nohup ./scripts/watchdog-loop.sh > runtime/watchdog-loop.nohup.log 2>&1 &
 
 ---
 
-## 7. 文档入口
+## 7. 下载发布资产
+
+已提供可直接下载的发布压缩包（仓库 `releases/` 目录）：
+
+- `releases/openclaw-ui-ops-v0.1.0.tar.gz`
+- `releases/openclaw-ui-ops-v0.1.0.sha256`
+
+校验示例：
+
+```bash
+sha256sum -c releases/openclaw-ui-ops-v0.1.0.sha256
+```
+
+---
+
+## 8. 文档入口
 
 - 英文说明：`README.en.md`
 - 变更记录：`CHANGELOG.md`
