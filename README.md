@@ -146,7 +146,24 @@ nohup ./scripts/watchdog-loop.sh > runtime/watchdog-loop.nohup.log 2>&1 &
 
 ---
 
-## 7. 下载发布资产
+## 7. Packages（GitHub Packages）
+
+已补充 GHCR 发布流水线（见 `.github/workflows/publish-ghcr.yml`）。
+发布后可在仓库右侧 **Packages** 看到镜像。
+
+镜像名：
+- `ghcr.io/zhanfangege/openclaw-ui-ops:v0.1.0`
+- `ghcr.io/zhanfangege/openclaw-ui-ops:latest`
+
+拉取示例：
+
+```bash
+docker pull ghcr.io/zhanfangege/openclaw-ui-ops:latest
+```
+
+---
+
+## 8. 下载发布资产
 
 已提供可直接下载的发布压缩包（仓库 `releases/` 目录）：
 

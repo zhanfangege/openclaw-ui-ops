@@ -125,6 +125,23 @@ docker compose up -d
 
 ---
 
+## Packages (GitHub Packages)
+
+A GHCR publish workflow is now included (`.github/workflows/publish-ghcr.yml`).
+After publishing, the image will appear in the repository **Packages** panel.
+
+Image name:
+- `ghcr.io/zhanfangege/openclaw-ui-ops:v0.1.0`
+- `ghcr.io/zhanfangege/openclaw-ui-ops:latest`
+
+Pull example:
+
+```bash
+docker pull ghcr.io/zhanfangege/openclaw-ui-ops:latest
+```
+
+---
+
 ## Downloadable release assets
 
 A ready-to-download release package is included in `releases/`:
