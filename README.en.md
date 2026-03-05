@@ -1,6 +1,21 @@
 # openclaw-ui-ops
 
+![license](https://img.shields.io/badge/license-MIT-blue.svg)
+![platform](https://img.shields.io/badge/platform-OpenClaw%20Ops-6f42c1.svg)
+![ui](https://img.shields.io/badge/UI-Mobile%20Ready-00bcd4.svg)
+
 Operations toolkit and web console for OpenClaw, including a standalone dashboard app: `openclaw-ui`.
+
+## Preview
+
+### Desktop
+![desktop](./docs/assets/dashboard-desktop.svg)
+
+### Mobile
+![mobile](./docs/assets/dashboard-mobile.svg)
+
+### Quick command execution
+![demo](./docs/assets/quick-command-demo.svg)
 
 > Goal: provide a single visual entrypoint for runtime status, sessions/subagents monitoring, quick ops commands, and audit logs.
 

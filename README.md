@@ -1,8 +1,23 @@
 # openclaw-ui-ops
 
+![license](https://img.shields.io/badge/license-MIT-blue.svg)
+![platform](https://img.shields.io/badge/platform-OpenClaw%20Ops-6f42c1.svg)
+![ui](https://img.shields.io/badge/UI-Mobile%20Ready-00bcd4.svg)
+
 OpenClaw 运维与控制台项目（含独立 Web 看板 `openclaw-ui`）。
 
 [中文](./README.md) | [English](./README.en.md)
+
+## 项目预览
+
+### 桌面端
+![desktop](./docs/assets/dashboard-desktop.svg)
+
+### 移动端
+![mobile](./docs/assets/dashboard-mobile.svg)
+
+### 快捷命令执行演示
+![demo](./docs/assets/quick-command-demo.svg)
 
 > 目标：把 OpenClaw 的运行状态、会话执行、快捷运维命令、审计日志集中到一个可视化入口，支持桌面与手机访问。
 

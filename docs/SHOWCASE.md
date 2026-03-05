@@ -6,9 +6,9 @@ This project supports a richer open-source landing format with screenshots and d
 
 Place assets under `docs/assets/`:
 
-- `dashboard-desktop.png`
-- `dashboard-mobile.png`
-- `quick-command-demo.gif`
+- `dashboard-desktop.svg` (placeholder, replace with real screenshot if available)
+- `dashboard-mobile.svg` (placeholder, replace with real screenshot if available)
+- `quick-command-demo.svg` (placeholder, replace with real GIF/video capture if available)
 
 ## Capture suggestions
 
