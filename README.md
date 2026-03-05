@@ -180,4 +180,5 @@ nohup ./scripts/watchdog-loop.sh > runtime/watchdog-loop.nohup.log 2>&1 &
 
 ## 9. License
 
-本项目使用 MIT License，详见 `LICENSE`。
+本项目**完全开源**，采用 MIT License 发布，允许个人和商业场景自由使用、修改与分发。
+详见仓库根目录 `LICENSE`。

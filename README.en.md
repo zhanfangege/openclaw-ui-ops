@@ -144,4 +144,6 @@ services:
 
 ## License
 
-MIT License (see `LICENSE`).
+This project is **fully open-source** under the MIT License.
+You are free to use, modify, and distribute it for personal and commercial use.
+See `LICENSE` for details.
