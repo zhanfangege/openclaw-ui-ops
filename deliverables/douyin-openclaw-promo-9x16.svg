@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0B1026"/>
+      <stop offset="50%" stop-color="#141B45"/>
+      <stop offset="100%" stop-color="#1A0F34"/>
+    </linearGradient>
+    <linearGradient id="neon" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#33F1FF"/>
+      <stop offset="100%" stop-color="#7A5CFF"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1080" height="1920" fill="url(#bg)"/>
+  <circle cx="980" cy="120" r="240" fill="#2CEAFF" opacity="0.14"/>
+  <circle cx="100" cy="1780" r="280" fill="#8A5BFF" opacity="0.16"/>
+
+  <rect x="70" y="120" width="940" height="1680" rx="36" fill="#0D1431" opacity="0.72" stroke="url(#neon)" stroke-width="2"/>
+
+  <text x="120" y="260" font-size="54" fill="#B8F8FF" font-weight="700" font-family="PingFang SC, Microsoft YaHei, sans-serif">OpenClaw 免费部署</text>
+  <text x="120" y="340" font-size="106" fill="url(#neon)" font-weight="900" filter="url(#glow)" font-family="PingFang SC, Microsoft YaHei, sans-serif">手把手教学</text>
+
+  <text x="120" y="430" font-size="40" fill="#EAF1FF" font-family="PingFang SC, Microsoft YaHei, sans-serif">0基础也能搭 · 本地可跑 · 实战可用</text>
+
+  <rect x="120" y="500" width="840" height="470" rx="28" fill="#0A122D" stroke="#3AE8FF" stroke-opacity="0.5"/>
+  <text x="160" y="590" font-size="44" fill="#FFFFFF" font-weight="700" font-family="PingFang SC, Microsoft YaHei, sans-serif">你将获得：</text>
+  <text x="160" y="675" font-size="38" fill="#D9E7FF" font-family="PingFang SC, Microsoft YaHei, sans-serif">✅ OpenClaw 环境一键起跑</text>
+  <text x="160" y="745" font-size="38" fill="#D9E7FF" font-family="PingFang SC, Microsoft YaHei, sans-serif">✅ 运维看板 + 快捷命令实战</text>
+  <text x="160" y="815" font-size="38" fill="#D9E7FF" font-family="PingFang SC, Microsoft YaHei, sans-serif">✅ 常见报错排查模板</text>
+  <text x="160" y="885" font-size="38" fill="#D9E7FF" font-family="PingFang SC, Microsoft YaHei, sans-serif">✅ 持续优化与升级路线</text>
+
+  <rect x="120" y="1020" width="840" height="420" rx="28" fill="#111A3E" stroke="#7A5CFF" stroke-opacity="0.6"/>
+  <text x="160" y="1110" font-size="42" fill="#FFFFFF" font-weight="700" font-family="PingFang SC, Microsoft YaHei, sans-serif">引导文案（可配视频口播）</text>
+  <text x="160" y="1190" font-size="34" fill="#CFE0FF" font-family="PingFang SC, Microsoft YaHei, sans-serif">“想用 AI Agent，但部署太难？”</text>
+  <text x="160" y="1250" font-size="34" fill="#CFE0FF" font-family="PingFang SC, Microsoft YaHei, sans-serif">“我把 OpenClaw 免费部署流程开源了”</text>
+  <text x="160" y="1310" font-size="34" fill="#CFE0FF" font-family="PingFang SC, Microsoft YaHei, sans-serif">“评论区扣【部署】我发你完整教程”</text>
+  <text x="160" y="1370" font-size="34" fill="#CFE0FF" font-family="PingFang SC, Microsoft YaHei, sans-serif">“关注我，持续更新 Agent 实战干货”</text>
+
+  <rect x="120" y="1490" width="380" height="230" rx="20" fill="#0A122D" stroke="#33F1FF" stroke-opacity="0.6"/>
+  <text x="160" y="1600" font-size="34" fill="#E8F4FF" font-family="PingFang SC, Microsoft YaHei, sans-serif">放你的头像 / Logo</text>
+
+  <rect x="560" y="1490" width="400" height="230" rx="20" fill="#FFFFFF"/>
+  <text x="620" y="1610" font-size="34" fill="#111" font-family="PingFang SC, Microsoft YaHei, sans-serif">二维码位置</text>
+
+  <text x="120" y="1785" font-size="40" fill="url(#neon)" font-weight="800" font-family="PingFang SC, Microsoft YaHei, sans-serif">免费部署 · 免费资料 · 长期答疑</text>
+  <text x="120" y="1845" font-size="28" fill="#AFC4F8" font-family="PingFang SC, Microsoft YaHei, sans-serif">*建议文案真实描述服务边界，提升账号长期信任度</text>
+</svg>
