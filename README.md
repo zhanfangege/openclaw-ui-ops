@@ -81,7 +81,7 @@ UI_TOKEN='replace-with-a-strong-random-token' PORT=18790 HOST=0.0.0.0 npm start
 cd openclaw-ui
 cp .env.example .env
 # 编辑 .env，把 UI_TOKEN 改成你的强随机值
-set -a; source .env; set +a
+set -a; . ./.env; set +a
 npm start
 ```
 

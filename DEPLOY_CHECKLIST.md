@@ -51,7 +51,7 @@ npm start
 ```bash
 cp .env.example .env
 # 编辑 .env
-set -a; source .env; set +a
+set -a; . ./.env; set +a
 npm start
 ```
 

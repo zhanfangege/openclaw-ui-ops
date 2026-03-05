@@ -71,7 +71,7 @@ Option B: config file workflow
 cd openclaw-ui
 cp .env.example .env
 # edit UI_TOKEN in .env
-set -a; source .env; set +a
+set -a; . ./.env; set +a
 npm start
 ```
 
