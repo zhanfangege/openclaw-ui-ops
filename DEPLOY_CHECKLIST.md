@@ -124,3 +124,5 @@ nohup ./scripts/watchdog-loop.sh > runtime/watchdog-loop.nohup.log 2>&1 &
 - [ ] `/api/quick-commands` 返回 ok=true
 - [ ] 快捷命令可执行并有实时输出
 - [ ] 设置 token 后，未携带 token 请求返回 401
+
+详细验收步骤见：`deploy/VERIFY.md`

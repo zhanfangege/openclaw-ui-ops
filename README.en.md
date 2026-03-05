@@ -135,6 +135,7 @@ docker compose up -d
 - UI details: `openclaw-ui/README.md`
 - Architecture: `docs/ARCHITECTURE.md`
 - Deployment guides: `deploy/`
+- Docker verification checklist: `deploy/VERIFY.md`
 
 ---
 

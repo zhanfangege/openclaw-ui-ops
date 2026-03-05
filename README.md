@@ -158,6 +158,7 @@ nohup ./scripts/watchdog-loop.sh > runtime/watchdog-loop.nohup.log 2>&1 &
 - UI 详细说明：`openclaw-ui/README.md`
 - 宿主机守护：`deploy/HOST_OPENCLAW_WATCHDOG.md`
 - 1Panel 自动运行：`deploy/HOST_AUTORUN_1PANEL.md`
+- Docker 部署验收清单：`deploy/VERIFY.md`
 
 ---
 
