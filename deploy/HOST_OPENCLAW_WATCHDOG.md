@@ -1,29 +1,50 @@
-# Host Watchdog for OpenClaw (NAS)
+# OpenClaw UI 宿主机守护（通用 Linux）
 
-## What it does
-- Ensures container `openclaw` is running
-- Executes in-container health check
-- Auto-restarts container if health check fails
-- Re-checks after restart
+> 目标：确保 `openclaw-ui` 持续可用，异常时自动拉起。
 
-## Script path (inside container-mounted workspace)
-`/home/node/.openclaw/workspace/bin/host_openclaw_watchdog.sh`
+## 方案 A（推荐）：Docker 自带重启策略
 
-## Run once (on NAS host)
+如果你用 Docker/1Panel 部署，优先使用：
+
+- `restart: unless-stopped`（compose）
+- 或 `--restart unless-stopped`（docker run）
+
+这通常就足够应对进程退出与宿主机重启。
+
+---
+
+## 方案 B：脚本健康检查（补充）
+
+项目内置脚本（仓库内）：
+
+- `openclaw-ui/scripts/start.sh`
+- `openclaw-ui/scripts/watchdog.sh`
+- `openclaw-ui/scripts/watchdog-loop.sh`
+
+手动启动：
+
 ```bash
-bash /vol1/@appdata/1Panel/1panel/apps/openclaw/openclaw/data/workspace/bin/host_openclaw_watchdog.sh openclaw
+cd openclaw-ui
+./scripts/start.sh
+nohup ./scripts/watchdog-loop.sh > runtime/watchdog-loop.nohup.log 2>&1 &
 ```
 
-## Install cron (every 5 min)
+---
+
+## crontab（可选）
+
+每 5 分钟执行一次单次巡检：
+
 ```bash
-(crontab -l 2>/dev/null; echo "*/5 * * * * bash /vol1/@appdata/1Panel/1panel/apps/openclaw/openclaw/data/workspace/bin/host_openclaw_watchdog.sh openclaw") | crontab -
+*/5 * * * * cd /path/to/openclaw-ui && ./scripts/watchdog.sh >> runtime/cron-watchdog.log 2>&1
 ```
 
-## Verify
+---
+
+## 验证
+
 ```bash
-crontab -l
+curl -I http://127.0.0.1:18790
 ```
 
-## Logs
-- Host watchdog: `/tmp/openclaw-host-watchdog.log`
-- In-container selfcheck: `/home/node/.openclaw/workspace/ops/openclaw-selfcheck.log`
+返回 `HTTP/1.1 200 OK` 代表 UI 服务可用。

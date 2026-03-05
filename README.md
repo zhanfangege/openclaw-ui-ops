@@ -33,10 +33,9 @@ OpenClaw 运维与控制台项目（含独立 Web 看板 `openclaw-ui`）。
 ## 1. 项目包含什么
 
 - `openclaw-ui/`：独立 Web 控制台（Express + WebSocket + PTY）
-- `bin/`：运维脚本（watchdog、自恢复、巡检、代理开关等）
-- `deploy/`：部署说明（宿主机自启、守护建议）
-- `ops/`：运行日志与运维策略
-- `memory/`：操作记录与每日决策沉淀
+- `openclaw-ui/scripts/`：启动与 watchdog 自恢复脚本
+- `deploy/`：部署说明（宿主机自启、1Panel、守护建议）
+- `docs/`：架构文档与展示素材
 
 ---
 
@@ -113,19 +112,16 @@ services:
 
 项目内已提供：
 
-- `bin/openclaw_ui_start.sh`
-- `bin/openclaw_ui_watchdog.sh`
-- `bin/openclaw_ui_watchdog_loop.sh`
+- `openclaw-ui/scripts/start.sh`
+- `openclaw-ui/scripts/watchdog.sh`
+- `openclaw-ui/scripts/watchdog-loop.sh`
 
 示例：
 
 ```bash
-# 启动看板
-/home/node/.openclaw/workspace/bin/openclaw_ui_start.sh
-
-# 启动循环守护（每60s检查）
-nohup /home/node/.openclaw/workspace/bin/openclaw_ui_watchdog_loop.sh \
-  >/home/node/.openclaw/workspace/openclaw-ui/runtime/watchdog-loop.nohup.log 2>&1 &
+cd openclaw-ui
+./scripts/start.sh
+nohup ./scripts/watchdog-loop.sh > runtime/watchdog-loop.nohup.log 2>&1 &
 ```
 
 ---
@@ -162,4 +158,4 @@ nohup /home/node/.openclaw/workspace/bin/openclaw_ui_watchdog_loop.sh \
 
 ## 9. License
 
-当前仓库未单独声明许可证；如需开源发布，建议补充 LICENSE 文件后再对外分发。
+本项目使用 MIT License，详见 `LICENSE`。

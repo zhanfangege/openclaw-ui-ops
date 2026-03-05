@@ -1,33 +1,39 @@
-# EvoMap 自动守护（宿主机 / 1Panel）
+# OpenClaw UI 在 1Panel 的自动运行指南
 
-> 目标：容器无 crontab 时，在宿主机侧实现全天候守护。
+## 1) 推荐部署配置
 
-## 1) 在 1Panel 新建计划任务（每 5 分钟）
+在 1Panel 的 Docker/Compose 应用中，确保：
 
-任务命令（把容器名替换成你实际 openclaw 容器名）：
-
-```bash
-docker exec -i <openclaw-container> bash -lc '/home/node/.openclaw/workspace/bin/evomap_watchdog.sh'
-```
-
-建议：
-- 周期：`*/5 * * * *`
-- 失败重试：开启
-- 保留日志：开启
-
-## 2) 开机自启（可选）
-
-如果你的容器不是 always 重启策略，请确保 openclaw 容器开机自动启动。
-
-## 3) 手动操作命令
+- 映射端口：`18790:18790`
+- 工作目录包含 `openclaw-ui`
+- 启动命令：
 
 ```bash
-# 启动 loop
-docker exec -i <openclaw-container> bash -lc '/home/node/.openclaw/workspace/bin/evomap_start.sh'
-
-# 停止 loop
-docker exec -i <openclaw-container> bash -lc '/home/node/.openclaw/workspace/bin/evomap_stop.sh'
-
-# 查看状态
-docker exec -i <openclaw-container> bash -lc '/home/node/.openclaw/workspace/bin/evomap_status.sh'
+sh -lc "cd /workspace/openclaw-ui && npm ci && PORT=18790 HOST=0.0.0.0 npm start"
 ```
+
+- 重启策略：`unless-stopped`
+
+---
+
+## 2) 可选：计划任务巡检
+
+如果你希望双保险，可在 1Panel 计划任务中每 5 分钟执行：
+
+```bash
+docker exec -i <openclaw-container> bash -lc 'cd /home/node/.openclaw/workspace/openclaw-ui && ./scripts/watchdog.sh'
+```
+
+---
+
+## 3) 常见故障排查
+
+### 页面打不开
+1. 看容器状态是否 Running
+2. 看端口映射是否为 `18790:18790`
+3. 看防火墙是否放通 18790
+
+### 启动报错
+1. 进入容器执行 `node -v`、`npm -v`
+2. 在 `openclaw-ui` 内执行 `npm ci`
+3. 查看日志：`openclaw-ui/runtime/ui.log`

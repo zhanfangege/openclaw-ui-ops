@@ -29,6 +29,10 @@ openclaw-ui/
 │   ├── index.html
 │   ├── styles.css
 │   └── app.js
+├── scripts/
+│   ├── start.sh
+│   ├── watchdog.sh
+│   └── watchdog-loop.sh
 ├── server.js
 ├── package.json
 ├── audit.log
@@ -107,18 +111,18 @@ UI_TOKEN='your-strong-token' PORT=18790 HOST=0.0.0.0 npm start
 
 ## 6) 自恢复运维
 
-仓库根目录脚本（推荐）：
+项目内脚本（推荐）：
 
-- `bin/openclaw_ui_start.sh`：启动 UI 并写 PID
-- `bin/openclaw_ui_watchdog.sh`：单次健康检查与拉起
-- `bin/openclaw_ui_watchdog_loop.sh`：循环守护（默认 60 秒）
+- `scripts/start.sh`：启动 UI 并写 PID
+- `scripts/watchdog.sh`：单次健康检查与拉起
+- `scripts/watchdog-loop.sh`：循环守护（默认 60 秒）
 
 示例：
 
 ```bash
-/home/node/.openclaw/workspace/bin/openclaw_ui_start.sh
-nohup /home/node/.openclaw/workspace/bin/openclaw_ui_watchdog_loop.sh \
-  >/home/node/.openclaw/workspace/openclaw-ui/runtime/watchdog-loop.nohup.log 2>&1 &
+cd openclaw-ui
+./scripts/start.sh
+nohup ./scripts/watchdog-loop.sh > runtime/watchdog-loop.nohup.log 2>&1 &
 ```
 
 ---
