@@ -2,6 +2,8 @@
 
 OpenClaw 运维与控制台项目（含独立 Web 看板 `openclaw-ui`）。
 
+[中文](./README.md) | [English](./README.en.md)
+
 > 目标：把 OpenClaw 的运行状态、会话执行、快捷运维命令、审计日志集中到一个可视化入口，支持桌面与手机访问。
 
 ---
@@ -108,6 +110,9 @@ nohup /home/node/.openclaw/workspace/bin/openclaw_ui_watchdog_loop.sh \
 
 ## 7. 文档入口
 
+- 英文说明：`README.en.md`
+- 架构说明：`docs/ARCHITECTURE.md`
+- 展示素材规范：`docs/SHOWCASE.md`
 - UI 详细说明：`openclaw-ui/README.md`
 - 宿主机守护：`deploy/HOST_OPENCLAW_WATCHDOG.md`
 - 1Panel 自动运行：`deploy/HOST_AUTORUN_1PANEL.md`
