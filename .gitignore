@@ -1,0 +1,23 @@
+# Keep repository focused on openclaw-ui project surface
+*
+
+# Allowlisted project files/directories
+!.gitignore
+!README.md
+!README.en.md
+!LICENSE
+!CHANGELOG.md
+!ROADMAP.md
+!RELEASE_NOTES_v0.1.0.md
+!openclaw-ui/
+!openclaw-ui/**
+!docs/
+!docs/**
+!deploy/
+!deploy/**
+
+# Runtime/log noise inside allowed dirs
+openclaw-ui/runtime/
+openclaw-ui/*.log
+openclaw-ui/audit.log
+openclaw-ui/ui.log

@@ -1,3 +1,0 @@
-date=2026-03-02
-evolver_loop_running=1
-evomap_loop_running=1

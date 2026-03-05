@@ -1,2 +1,0 @@
-[31mERROR[0m[0033] [[38;5;221m1816477706[0m 5.0s] outbound/urltest[auto]: dial tcp 172.64.146.13:443: i/o timeout
-[31mERROR[0m[0038] [[38;5;29m3582344164[0m 5.0s] outbound/urltest[auto]: dial tcp 172.64.146.13:443: i/o timeout
