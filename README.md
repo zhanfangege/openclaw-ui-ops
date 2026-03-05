@@ -66,6 +66,17 @@ npm install
 PORT=18790 HOST=0.0.0.0 npm start
 ```
 
+### 3.3 Token 鉴权配置（推荐）
+
+```bash
+cd openclaw-ui
+UI_TOKEN='replace-with-a-strong-random-token' PORT=18790 HOST=0.0.0.0 npm start
+```
+
+说明：
+- 设置 `UI_TOKEN` 后，请在页面右上角输入相同 token。
+- 未携带或错误 token 的 API 请求会返回 `401 unauthorized`。
+
 访问：
 
 - 本机：`http://localhost:18790`
@@ -132,6 +143,7 @@ nohup ./scripts/watchdog-loop.sh > runtime/watchdog-loop.nohup.log 2>&1 &
 - 变更记录：`CHANGELOG.md`
 - 版本规划：`ROADMAP.md`
 - 首版发布说明：`RELEASE_NOTES_v0.1.0.md`
+- 冷启动部署检查单：`DEPLOY_CHECKLIST.md`
 - 架构说明：`docs/ARCHITECTURE.md`
 - 展示素材规范：`docs/SHOWCASE.md`
 - UI 详细说明：`openclaw-ui/README.md`

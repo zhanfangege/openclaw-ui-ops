@@ -57,6 +57,17 @@ npm install
 PORT=18790 HOST=0.0.0.0 npm start
 ```
 
+## Token auth setup (recommended)
+
+```bash
+cd openclaw-ui
+UI_TOKEN='replace-with-a-strong-random-token' PORT=18790 HOST=0.0.0.0 npm start
+```
+
+Notes:
+- When `UI_TOKEN` is enabled, enter the same token in the top-right token field.
+- Requests without valid token will return `401 unauthorized`.
+
 Open:
 
 - Local: `http://localhost:18790`
@@ -112,6 +123,7 @@ services:
 - Changelog: `CHANGELOG.md`
 - Roadmap: `ROADMAP.md`
 - Release notes: `RELEASE_NOTES_v0.1.0.md`
+- Cold-start deploy checklist: `DEPLOY_CHECKLIST.md`
 - UI details: `openclaw-ui/README.md`
 - Architecture: `docs/ARCHITECTURE.md`
 - Deployment guides: `deploy/`
