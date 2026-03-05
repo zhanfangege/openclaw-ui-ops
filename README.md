@@ -152,7 +152,7 @@ nohup ./scripts/watchdog-loop.sh > runtime/watchdog-loop.nohup.log 2>&1 &
 发布后可在仓库右侧 **Packages** 看到镜像。
 
 镜像名：
-- `ghcr.io/zhanfangege/openclaw-ui-ops:v0.1.0`
+- `ghcr.io/zhanfangege/openclaw-ui-ops:v0.1.1`
 - `ghcr.io/zhanfangege/openclaw-ui-ops:latest`
 
 拉取示例：
@@ -160,6 +160,19 @@ nohup ./scripts/watchdog-loop.sh > runtime/watchdog-loop.nohup.log 2>&1 &
 ```bash
 docker pull ghcr.io/zhanfangege/openclaw-ui-ops:latest
 ```
+
+一键运行示例：
+
+```bash
+docker run -d --name openclaw-ui \
+  -p 18790:18790 \
+  -e PORT=18790 -e HOST=0.0.0.0 \
+  -e UI_TOKEN=replace-with-a-strong-random-token \
+  --restart unless-stopped \
+  ghcr.io/zhanfangege/openclaw-ui-ops:latest
+```
+
+完整说明见：`deploy/PACKAGES.md`
 
 ---
 

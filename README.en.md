@@ -131,7 +131,7 @@ A GHCR publish workflow is now included (`.github/workflows/publish-ghcr.yml`).
 After publishing, the image will appear in the repository **Packages** panel.
 
 Image name:
-- `ghcr.io/zhanfangege/openclaw-ui-ops:v0.1.0`
+- `ghcr.io/zhanfangege/openclaw-ui-ops:v0.1.1`
 - `ghcr.io/zhanfangege/openclaw-ui-ops:latest`
 
 Pull example:
@@ -139,6 +139,19 @@ Pull example:
 ```bash
 docker pull ghcr.io/zhanfangege/openclaw-ui-ops:latest
 ```
+
+Run example:
+
+```bash
+docker run -d --name openclaw-ui \
+  -p 18790:18790 \
+  -e PORT=18790 -e HOST=0.0.0.0 \
+  -e UI_TOKEN=replace-with-a-strong-random-token \
+  --restart unless-stopped \
+  ghcr.io/zhanfangege/openclaw-ui-ops:latest
+```
+
+Full guide: `deploy/PACKAGES.md`
 
 ---
 
