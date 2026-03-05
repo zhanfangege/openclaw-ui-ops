@@ -4,11 +4,16 @@ This project supports a richer open-source landing format with screenshots and d
 
 ## Recommended files
 
-Place assets under `docs/assets/`:
+Place assets under `docs/assets/` and `docs/assets/screenshots/`:
 
-- `dashboard-desktop.svg` (placeholder, replace with real screenshot if available)
-- `dashboard-mobile.svg` (placeholder, replace with real screenshot if available)
-- `quick-command-demo.svg` (placeholder, replace with real GIF/video capture if available)
+- `screenshots/desktop-1.png`
+- `screenshots/desktop-2.png`
+- `screenshots/desktop-3.png`
+- `screenshots/mobile-1.jpg`
+- `screenshots/mobile-2.jpg`
+- `screenshots/mobile-3.jpg`
+- `screenshots/mobile-4.jpg`
+- `quick-command-demo.svg` (placeholder, can be replaced by GIF)
 
 ## Capture suggestions
 
