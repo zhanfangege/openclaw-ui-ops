@@ -133,6 +133,9 @@ nohup /home/node/.openclaw/workspace/bin/openclaw_ui_watchdog_loop.sh \
 ## 7. 文档入口
 
 - 英文说明：`README.en.md`
+- 变更记录：`CHANGELOG.md`
+- 版本规划：`ROADMAP.md`
+- 首版发布说明：`RELEASE_NOTES_v0.1.0.md`
 - 架构说明：`docs/ARCHITECTURE.md`
 - 展示素材规范：`docs/SHOWCASE.md`
 - UI 详细说明：`openclaw-ui/README.md`

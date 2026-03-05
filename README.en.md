@@ -109,6 +109,9 @@ services:
 ## Documentation
 
 - Chinese README: `README.md`
+- Changelog: `CHANGELOG.md`
+- Roadmap: `ROADMAP.md`
+- Release notes: `RELEASE_NOTES_v0.1.0.md`
 - UI details: `openclaw-ui/README.md`
 - Architecture: `docs/ARCHITECTURE.md`
 - Deployment guides: `deploy/`
