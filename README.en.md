@@ -95,19 +95,15 @@ Make sure port mapping is enabled:
 -p 18790:18790
 ```
 
-Example compose snippet:
+A ready-to-use compose file is included: `deploy/docker-compose.yml`
 
-```yaml
-services:
-  openclaw-ui:
-    image: node:22
-    working_dir: /workspace/openclaw-ui
-    command: sh -lc "npm ci && PORT=18790 HOST=0.0.0.0 npm start"
-    ports:
-      - "18790:18790"
-    volumes:
-      - ./:/workspace
-    restart: unless-stopped
+Quick start:
+
+```bash
+cd deploy
+cp .env.example .env
+# edit UI_TOKEN in .env
+docker compose up -d
 ```
 
 ---

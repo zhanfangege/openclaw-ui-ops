@@ -83,11 +83,19 @@ curl -s http://127.0.0.1:18790/api/quick-commands
 
 ---
 
-## 5) Docker 部署最小核对
+## 5) Docker 部署（推荐）
 
-- 已映射端口：`18790:18790`
-- 启动命令包含：`PORT=18790 HOST=0.0.0.0 npm start`
-- 重启策略：`unless-stopped`
+```bash
+cd deploy
+cp .env.example .env
+# 编辑 UI_TOKEN
+docker compose up -d
+```
+
+核对项：
+- 端口映射为 `18790:18790`
+- 重启策略 `unless-stopped`
+- `UI_TOKEN` 已设置
 
 ---
 

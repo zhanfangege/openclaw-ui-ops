@@ -1,0 +1,15 @@
+services:
+  openclaw-ui:
+    image: node:22
+    container_name: openclaw-ui
+    working_dir: /workspace/openclaw-ui
+    command: sh -lc "npm ci && PORT=${PORT:-18790} HOST=${HOST:-0.0.0.0} UI_TOKEN=${UI_TOKEN:-} npm start"
+    ports:
+      - "${PORT:-18790}:${PORT:-18790}"
+    environment:
+      - PORT=${PORT:-18790}
+      - HOST=${HOST:-0.0.0.0}
+      - UI_TOKEN=${UI_TOKEN:-}
+    volumes:
+      - ..:/workspace
+    restart: unless-stopped

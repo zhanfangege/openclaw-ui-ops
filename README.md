@@ -105,19 +105,15 @@ npm start
 -p 18790:18790
 ```
 
-`docker-compose.yml` 示例（核心片段）：
+仓库已提供可直接使用的 compose 文件：`deploy/docker-compose.yml`
 
-```yaml
-services:
-  openclaw-ui:
-    image: node:22
-    working_dir: /workspace/openclaw-ui
-    command: sh -lc "npm ci && PORT=18790 HOST=0.0.0.0 npm start"
-    ports:
-      - "18790:18790"
-    volumes:
-      - ./:/workspace
-    restart: unless-stopped
+一键启动：
+
+```bash
+cd deploy
+cp .env.example .env
+# 编辑 .env，至少设置 UI_TOKEN
+docker compose up -d
 ```
 
 ---
