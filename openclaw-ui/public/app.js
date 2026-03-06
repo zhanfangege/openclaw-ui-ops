@@ -26,6 +26,7 @@ const slowTopBodyEl = $('slowTopBody');
 const errBreakdownBodyEl = $('errBreakdownBody');
 const term = new window.Terminal({ convertEol: true, cursorBlink: true, disableStdin: false, scrollback: 3000, theme: { background: '#050a15' } });
 term.open($('terminal'));
+$('terminal')?.addEventListener('click', () => term.focus());
 
 let ws;
 let commands = {};
@@ -40,7 +41,7 @@ function authHeaders() {
 }
 
 term.onData((data) => {
-  if (!interactiveShell) return;
+  if (!running) return;
   ws?.send(JSON.stringify({ type: 'pty-input', data }));
 });
 
@@ -304,6 +305,7 @@ function connectWs() {
       } else {
         term.writeln(`\r\n\x1b[36m$ ${msg.data.command}\x1b[0m`);
       }
+      term.focus();
       term.scrollToBottom();
     }
     if (msg.type === 'exit') {
