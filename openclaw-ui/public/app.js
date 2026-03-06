@@ -21,6 +21,9 @@ const historyAvgEl = $('historyAvg');
 const historyTimeoutEl = $('historyTimeout');
 const historyOnlyFailEl = $('historyOnlyFail');
 const historyOnlySlowEl = $('historyOnlySlow');
+const cmdStatsBodyEl = $('cmdStatsBody');
+const slowTopBodyEl = $('slowTopBody');
+const errBreakdownBodyEl = $('errBreakdownBody');
 const term = new window.Terminal({ convertEol: true, cursorBlink: true, disableStdin: true, scrollback: 3000, theme: { background: '#050a15' } });
 term.open($('terminal'));
 
@@ -170,12 +173,39 @@ function renderHistory(lines = []) {
   });
 }
 
+function renderMetrics(metrics = {}) {
+  if (!cmdStatsBodyEl || !slowTopBodyEl || !errBreakdownBodyEl) return;
+
+  cmdStatsBodyEl.innerHTML = '';
+  slowTopBodyEl.innerHTML = '';
+  errBreakdownBodyEl.innerHTML = '';
+
+  (metrics.commandStats || []).slice(0, 10).forEach((r) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r.key}</td><td>${r.successRate}%</td><td>${msLabel(r.avgMs)}</td><td>${r.count}</td>`;
+    cmdStatsBodyEl.appendChild(tr);
+  });
+
+  (metrics.slowTop || []).slice(0, 8).forEach((r) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r.key}</td><td>${msLabel(r.avgMs)}</td><td>${msLabel(r.maxMs)}</td>`;
+    slowTopBodyEl.appendChild(tr);
+  });
+
+  (metrics.errorBreakdown || []).slice(0, 8).forEach((r) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r.exitCode}</td><td>${r.count}</td>`;
+    errBreakdownBodyEl.appendChild(tr);
+  });
+}
+
 async function loadAll() {
-  const [quick, board, alerts, audit] = await Promise.all([
+  const [quick, board, alerts, audit, metrics] = await Promise.all([
     loadJson('/api/quick-commands'),
     loadJson('/api/board'),
     loadJson(alertsPath()),
-    loadJson('/api/audit')
+    loadJson('/api/audit'),
+    loadJson('/api/metrics')
   ]);
 
   commands = quick.commands || {};
@@ -226,6 +256,7 @@ async function loadAll() {
   });
   successRateEl.textContent = `${alerts.successRate ?? 100}%`;
   renderHistory(audit.lines || []);
+  renderMetrics(metrics || {});
 
   boardTimeEl.textContent = new Date().toLocaleTimeString();
 }

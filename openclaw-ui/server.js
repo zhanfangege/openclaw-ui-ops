@@ -231,6 +231,49 @@ app.get('/api/audit', async (_req, res) => {
   }
 });
 
+app.get('/api/metrics', async (_req, res) => {
+  try {
+    const txt = await fs.promises.readFile(AUDIT_PATH, 'utf8');
+    const rows = txt.trim().split('\n').map((x) => {
+      try { return JSON.parse(x); } catch { return null; }
+    }).filter(Boolean).filter((x) => x.event === 'command_exit').slice(-300);
+
+    const byCommand = new Map();
+    const byExit = new Map();
+
+    rows.forEach((r) => {
+      const key = r.key || r.command || 'unknown';
+      const cur = byCommand.get(key) || { key, count: 0, ok: 0, fail: 0, totalMs: 0, maxMs: 0 };
+      const ms = Number(r.durationMs || 0);
+      const code = Number(r.exitCode || 0);
+      cur.count += 1;
+      cur.totalMs += ms;
+      cur.maxMs = Math.max(cur.maxMs, ms);
+      if (code === 0) cur.ok += 1; else cur.fail += 1;
+      byCommand.set(key, cur);
+
+      byExit.set(code, (byExit.get(code) || 0) + 1);
+    });
+
+    const commandStats = [...byCommand.values()]
+      .map((x) => ({
+        ...x,
+        avgMs: x.count ? Math.round(x.totalMs / x.count) : 0,
+        successRate: x.count ? Math.round((x.ok / x.count) * 100) : 0
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    const slowTop = [...commandStats].sort((a, b) => b.avgMs - a.avgMs).slice(0, 8);
+    const errorBreakdown = [...byExit.entries()]
+      .map(([exitCode, count]) => ({ exitCode: Number(exitCode), count }))
+      .sort((a, b) => b.count - a.count);
+
+    res.json({ ok: true, total: rows.length, commandStats, slowTop, errorBreakdown });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error?.message || 'metrics_failed' });
+  }
+});
+
 app.get('/api/alerts', async (req, res) => {
   const loadWarnRaw = Number(req.query.loadWarn || 8);
   const memWarnRaw = Number(req.query.memWarn || 85);

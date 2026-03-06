@@ -134,6 +134,19 @@ pre::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #35f2ff, #6f5
 .history-table td.ok { color: #7df0b8; }
 .history-table td.bad { color: #ff9fb4; }
 
+.metrics-grid {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.metrics-grid article {
+  background: color-mix(in srgb, var(--panel) 80%, #000 20%);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 8px;
+}
+
 @media (max-width: 1200px) {
   body { overflow:auto; height:auto; }
   header { min-height: unset; height: auto; align-items: flex-start; }
@@ -167,6 +180,7 @@ pre::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #35f2ff, #6f5
   #terminal { height: 260px; }
 
   .cards.two.compact { grid-template-columns: 1fr; height: auto; }
+  .metrics-grid { grid-template-columns: 1fr; }
   pre { max-height: 180px; font-size: 10px; }
 }
 

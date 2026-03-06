@@ -93,6 +93,36 @@
             <tbody id="historyBody"></tbody>
           </table>
         </div>
+
+        <div class="metrics-grid">
+          <article>
+            <h3>命令成功率/耗时</h3>
+            <div class="history-table-wrap">
+              <table class="history-table">
+                <thead><tr><th>命令</th><th>成功率</th><th>平均耗时</th><th>次数</th></tr></thead>
+                <tbody id="cmdStatsBody"></tbody>
+              </table>
+            </div>
+          </article>
+          <article>
+            <h3>Top慢命令</h3>
+            <div class="history-table-wrap">
+              <table class="history-table">
+                <thead><tr><th>命令</th><th>平均耗时</th><th>最大耗时</th></tr></thead>
+                <tbody id="slowTopBody"></tbody>
+              </table>
+            </div>
+          </article>
+          <article>
+            <h3>失败原因聚合</h3>
+            <div class="history-table-wrap">
+              <table class="history-table">
+                <thead><tr><th>ExitCode</th><th>次数</th></tr></thead>
+                <tbody id="errBreakdownBody"></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
       </section>
     </main>
 
