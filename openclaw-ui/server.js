@@ -23,8 +23,12 @@ const QUICK_COMMANDS = {
   'gateway-stop': { label: 'Gateway 停止', command: 'openclaw gateway stop', group: 'Gateway' },
   'gateway-restart': { label: 'Gateway 重启', command: 'openclaw gateway restart', group: 'Gateway' },
   'openclaw-status': { label: 'OpenClaw 状态', command: 'openclaw status', group: 'OpenClaw' },
-  'sessions-list': { label: 'Sessions 列表', command: 'openclaw sessions list --limit 30', group: 'OpenClaw' },
-  'subagents-list': { label: 'Subagents 列表', command: 'openclaw subagents list --recent-minutes 120', group: 'OpenClaw' },
+  'sessions-list': { label: 'Sessions 列表', command: 'openclaw sessions', group: 'OpenClaw' },
+  'subagents-list': {
+    label: 'Subagents 视图',
+    command: "bash -lc \"openclaw sessions 2>/dev/null | grep -i subagent || echo 'No subagent rows found in sessions output'\"",
+    group: 'OpenClaw'
+  },
   'doctor': { label: 'Doctor 诊断', command: 'openclaw doctor', group: '诊断' },
   'check-update': {
     label: '检查更新',
@@ -145,8 +149,8 @@ app.get('/api/board', async (_req, res) => {
       runCommand('openclaw --version || openclaw version || echo unknown'),
       runCommand('node -v'),
       runCommand('openclaw gateway status | head -n 30'),
-      runCommand('openclaw sessions list --limit 100 || openclaw sessions list'),
-      runCommand('openclaw subagents list --recent-minutes 120 || openclaw agents list'),
+      runCommand('openclaw sessions'),
+      runCommand("bash -lc \"openclaw sessions 2>/dev/null | grep -i subagent || echo 'No subagent rows found in sessions output'\""),
       runCommand('uptime'),
       runCommand("free -m 2>/dev/null | awk 'NR==2{printf \"%s/%s MB\",$3,$2}' || echo n/a"),
       runCommand('openclaw status | head -n 220'),
