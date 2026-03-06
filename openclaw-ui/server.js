@@ -14,6 +14,8 @@ const UI_TOKEN = process.env.UI_TOKEN || '';
 const AUDIT_PATH = path.join(process.cwd(), 'audit.log');
 const SSL_KEY_PATH = process.env.SSL_KEY_PATH || '';
 const SSL_CERT_PATH = process.env.SSL_CERT_PATH || '';
+const CMD_TIMEOUT_MS = Number(process.env.CMD_TIMEOUT_MS || 20000);
+const CMD_MAX_OUTPUT = Number(process.env.CMD_MAX_OUTPUT || 512000);
 
 const QUICK_COMMANDS = {
   'gateway-status': { label: 'Gateway 状态', command: 'openclaw gateway status', group: 'Gateway' },
@@ -60,21 +62,49 @@ function audit(event, payload = {}) {
 
 function runCommand(command) {
   return new Promise((resolve) => {
-    const p = pty.spawn('bash', ['-lc', command], { name: 'xterm-color', cols: 120, rows: 30, cwd: process.cwd(), env: process.env });
+    const p = pty.spawn('bash', ['-lc', command], {
+      name: 'xterm-color', cols: 120, rows: 30, cwd: process.cwd(), env: process.env
+    });
+
     let out = '';
-    p.onData((d) => { out += d; });
-    p.onExit(({ exitCode }) => resolve({ ok: exitCode === 0, output: out, exitCode }));
+    let settled = false;
+
+    const done = (result) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(result);
+    };
+
+    const timer = setTimeout(() => {
+      try { p.kill(); } catch {}
+      done({ ok: false, output: out, exitCode: 124, timedOut: true });
+    }, CMD_TIMEOUT_MS);
+
+    p.onData((d) => {
+      if (out.length < CMD_MAX_OUTPUT) {
+        out += d;
+        if (out.length > CMD_MAX_OUTPUT) out = out.slice(0, CMD_MAX_OUTPUT);
+      }
+    });
+
+    p.onExit(({ exitCode }) => {
+      done({ ok: exitCode === 0, output: out, exitCode, timedOut: false });
+    });
   });
 }
 
 function stripAnsi(text = '') {
-  return text.replace(/\u001b\[[0-9;]*m/g, '').replace(/\r/g, '');
+  const safe = typeof text === 'string' ? text : String(text ?? '');
+  return safe.replace(/\u001b\[[0-9;]*m/g, '').replace(/\r/g, '');
 }
 
 function countDataRows(text = '') {
   const lines = stripAnsi(text).split('\n').map((x) => x.trim()).filter(Boolean);
-  const data = lines.filter((line) => !/^[-─|+]+$/.test(line) && !/^(id|name|status|session|subagent)/i.test(line));
-  return Math.max(data.length - 1, 0);
+  return lines.filter((line) => (
+    !/^[-─|+]+$/.test(line)
+    && !/^(id|name|status|session|subagent)\b/i.test(line)
+  )).length;
 }
 
 const apiCache = {
@@ -109,7 +139,8 @@ app.get('/api/quick-commands', (_req, res) => {
 });
 
 app.get('/api/board', async (_req, res) => {
-  const data = await withCache('board', async () => {
+  try {
+    const data = await withCache('board', async () => {
     const [ver, node, gateway, sessions, subagents, uptime, mem, status, ctx] = await Promise.all([
       runCommand('openclaw --version || openclaw version || echo unknown'),
       runCommand('node -v'),
@@ -166,8 +197,11 @@ app.get('/api/board', async (_req, res) => {
         status: statusText || 'No openclaw status output'
       }
     };
-  });
-  res.json(data);
+    });
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error?.message || 'board_failed' });
+  }
 });
 
 app.get('/api/dashboard', async (_req, res) => {
@@ -198,12 +232,15 @@ app.get('/api/audit', async (_req, res) => {
 });
 
 app.get('/api/alerts', async (req, res) => {
-  const loadWarn = Number(req.query.loadWarn || 8);
-  const memWarn = Number(req.query.memWarn || 85);
+  const loadWarnRaw = Number(req.query.loadWarn || 8);
+  const memWarnRaw = Number(req.query.memWarn || 85);
+  const loadWarn = Number.isFinite(loadWarnRaw) ? Math.min(Math.max(loadWarnRaw, 0.1), 100) : 8;
+  const memWarn = Number.isFinite(memWarnRaw) ? Math.min(Math.max(memWarnRaw, 1), 100) : 85;
   const cacheKey = `alerts:${loadWarn}:${memWarn}`;
   if (!apiCache[cacheKey]) apiCache[cacheKey] = { ts: 0, ttl: 8000, data: null, promise: null };
 
-  const data = await withCache(cacheKey, async () => {
+  try {
+    const data = await withCache(cacheKey, async () => {
     const [gateway, uptime, mem] = await Promise.all([
       runCommand('openclaw gateway status | head -n 20'),
       runCommand('uptime'),
@@ -240,7 +277,10 @@ app.get('/api/alerts', async (req, res) => {
     return { ok: true, alerts, successRate, load1, memPct: Number.isFinite(memPct) ? Math.round(memPct) : 0, thresholds: { loadWarn, memWarn } };
   });
 
-  res.json(data);
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error?.message || 'alerts_failed' });
+  }
 });
 
 wss.on('connection', (ws, req) => {
