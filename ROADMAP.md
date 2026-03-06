@@ -1,5 +1,9 @@
 # Roadmap
 
+> 中文说明：路线图按版本列出规划能力，勾选项表示已完成，未勾选表示待交付。
+
+> English note: The roadmap lists planned capabilities by version. Checked items are done; unchecked items are pending.
+
 ## v0.2.0 (Next)
 
 - [ ] Role-based permissions (viewer/operator/admin).

@@ -1,5 +1,9 @@
 # GitHub Packages (GHCR) 使用说明
 
+> EN Summary: GHCR package usage guide including tags, visibility policy, pull/run examples, and publish triggers.
+
+> 中文说明：GHCR 镜像使用说明，含标签策略、可见性建议、拉取运行示例与发布触发方式。
+
 ## 1) 镜像地址
 
 - `ghcr.io/zhanfangege/openclaw-ui-ops:latest`

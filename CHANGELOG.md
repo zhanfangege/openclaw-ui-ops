@@ -1,5 +1,9 @@
 # Changelog
 
+> 中文说明：本文件记录所有版本的重要变更（新增 / 修改 / 修复），用于发布回溯与升级评估。
+
+> English note: This file tracks notable changes by release (Added/Changed/Fixed) for upgrade and release audits.
+
 All notable changes to this project will be documented in this file.
 
 ## [0.2.0] - 2026-03-06

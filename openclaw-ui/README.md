@@ -1,5 +1,9 @@
 # OpenClaw UI
 
+> EN Summary: Standalone web operations console for OpenClaw, with runtime board, quick commands, interactive terminal, analytics, audit logs, and mobile support.
+
+> 中文说明：OpenClaw 独立运维看板，支持运行状态、快捷命令、交互终端、分析面板与审计日志。
+
 OpenClaw 的独立 Web 运维看板（MVP+）。
 
 - 运行状态总览（OpenClaw / Gateway / Sessions / Subagents）

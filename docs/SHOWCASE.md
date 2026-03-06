@@ -1,5 +1,9 @@
 # Showcase Assets
 
+> 中文说明：该文档定义项目展示素材（截图/GIF）的建议规范与引用方式。
+
+> English note: This document defines recommended showcase assets (screenshots/GIFs) and how to reference them in README files.
+
 This project supports a richer open-source landing format with screenshots and demo GIFs.
 
 ## Recommended files

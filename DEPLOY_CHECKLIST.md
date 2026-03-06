@@ -1,5 +1,9 @@
 # DEPLOY_CHECKLIST
 
+> EN Summary: A cold-start deployment checklist for first-time setup, covering prerequisites, install/start steps, token hardening, verification, and acceptance criteria.
+
+> 中文说明：面向首次部署的冷启动清单，包含环境检查、启动、鉴权加固、验证与验收标准。
+
 面向首次访问者的“冷启动部署检查单”（按顺序执行）。
 
 ## 0) 前置条件

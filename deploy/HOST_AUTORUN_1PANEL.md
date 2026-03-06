@@ -1,5 +1,9 @@
 # OpenClaw UI 在 1Panel 的自动运行指南
 
+> EN Summary: 1Panel deployment and autorun guidance for `openclaw-ui`, including compose command recommendations, health checks, and troubleshooting.
+
+> 中文说明：用于 1Panel 场景下的自动运行配置、巡检命令与故障排查。
+
 ## 1) 推荐部署配置
 
 在 1Panel 的 Docker/Compose 应用中，确保：

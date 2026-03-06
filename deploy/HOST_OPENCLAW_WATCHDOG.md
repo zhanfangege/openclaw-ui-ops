@@ -1,5 +1,9 @@
 # OpenClaw UI 宿主机守护（通用 Linux）
 
+> EN Summary: Host-level watchdog strategy for Linux, with Docker restart policy first and script-based checks as fallback.
+
+> 中文说明：Linux 宿主机守护方案，优先 Docker 重启策略，脚本巡检作为补充。
+
 > 目标：确保 `openclaw-ui` 持续可用，异常时自动拉起。
 
 ## 方案 A（推荐）：Docker 自带重启策略

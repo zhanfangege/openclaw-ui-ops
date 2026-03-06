@@ -1,5 +1,14 @@
 # Release Notes - v0.2.0
 
+## 中文摘要
+
+`v0.2.0` 聚焦“稳定性 + 可维护性 + 可观测性”：新增交互终端输入、命令历史筛选、慢命令分析、错误聚合，并强化命令超时与输出上限保护。
+
+## English Summary
+
+`v0.2.0` focuses on stability, maintainability, and observability: interactive terminal input, command history filters, slow-command analytics, exit-code aggregation, plus command timeout/output guardrails.
+
+
 Release date: 2026-03-06
 
 ## Summary

@@ -1,5 +1,9 @@
 # VERIFY - OpenClaw UI Docker 部署验收清单
 
+> EN Summary: Docker deployment verification checklist for health, auth behavior, LAN reachability, and restart recovery.
+
+> 中文说明：Docker 部署验收清单，覆盖健康检查、鉴权验证、局域网可达性与重启恢复。
+
 > 目标：用最少命令确认部署成功、鉴权生效、可对外访问。
 
 ## 0) 前置

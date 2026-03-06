@@ -1,5 +1,9 @@
 # Architecture
 
+> 中文说明：该文档描述 `openclaw-ui` 与 OpenClaw/Gateway/会话运行时的关系、请求流与可靠性模型。
+
+> English note: This document describes the architecture, request flow, security, and reliability model of `openclaw-ui` with OpenClaw runtime.
+
 ## High-level
 
 ```mermaid

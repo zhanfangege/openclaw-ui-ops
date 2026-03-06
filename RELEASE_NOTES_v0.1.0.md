@@ -1,5 +1,14 @@
 # Release Notes - v0.1.0
 
+## 中文摘要
+
+`v0.1.0` 是 `openclaw-ui-ops` 的首个可用基线版本，提供运行看板、快捷命令执行、实时终端输出、移动端适配与基础守护脚本。
+
+## English Summary
+
+`v0.1.0` is the first production-usable baseline of `openclaw-ui-ops`, including runtime board, quick commands, real-time terminal streaming, mobile responsiveness, and watchdog scripts.
+
+
 Release date: 2026-03-05
 
 ## Summary
