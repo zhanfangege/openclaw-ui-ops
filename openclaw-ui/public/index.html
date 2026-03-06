@@ -74,6 +74,25 @@
           <article><h3>Sessions</h3><pre id="sessions"></pre></article>
           <article><h3>Subagents</h3><pre id="subagents"></pre></article>
         </div>
+
+        <div class="history-toolbar">
+          <h3>命令历史</h3>
+          <label><input type="checkbox" id="historyOnlyFail" /> 仅失败</label>
+          <label><input type="checkbox" id="historyOnlySlow" /> 仅慢命令(>5s)</label>
+        </div>
+        <div class="history-meta">
+          <span>最近命令数: <strong id="historyCount">0</strong></span>
+          <span>平均耗时: <strong id="historyAvg">-</strong></span>
+          <span>超时数: <strong id="historyTimeout">0</strong></span>
+        </div>
+        <div class="history-table-wrap">
+          <table class="history-table">
+            <thead>
+              <tr><th>时间</th><th>命令</th><th>结果</th><th>耗时</th></tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+        </div>
       </section>
     </main>
 

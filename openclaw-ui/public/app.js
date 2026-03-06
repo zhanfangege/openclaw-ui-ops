@@ -15,6 +15,12 @@ const successRateEl = $('successRate');
 const loadWarnEl = $('loadWarn');
 const memWarnEl = $('memWarn');
 const saveThresholdsEl = $('saveThresholds');
+const historyBodyEl = $('historyBody');
+const historyCountEl = $('historyCount');
+const historyAvgEl = $('historyAvg');
+const historyTimeoutEl = $('historyTimeout');
+const historyOnlyFailEl = $('historyOnlyFail');
+const historyOnlySlowEl = $('historyOnlySlow');
 const term = new window.Terminal({ convertEol: true, cursorBlink: true, disableStdin: true, scrollback: 3000, theme: { background: '#050a15' } });
 term.open($('terminal'));
 
@@ -115,11 +121,61 @@ function setAndScroll(id, text) {
   el.scrollTop = el.scrollHeight;
 }
 
+function msLabel(ms) {
+  const n = Number(ms || 0);
+  if (!Number.isFinite(n) || n <= 0) return '-';
+  if (n < 1000) return `${Math.round(n)}ms`;
+  return `${(n / 1000).toFixed(1)}s`;
+}
+
+function safeParseJsonLine(line) {
+  try { return JSON.parse(line); } catch { return null; }
+}
+
+function renderHistory(lines = []) {
+  if (!historyBodyEl) return;
+
+  const rows = lines
+    .map(safeParseJsonLine)
+    .filter(Boolean)
+    .filter((x) => x.event === 'command_exit')
+    .slice(-80)
+    .reverse();
+
+  const onlyFail = !!historyOnlyFailEl?.checked;
+  const onlySlow = !!historyOnlySlowEl?.checked;
+  const filtered = rows.filter((r) => {
+    if (onlyFail && Number(r.exitCode) === 0) return false;
+    if (onlySlow && Number(r.durationMs || 0) < 5000) return false;
+    return true;
+  });
+
+  const avgMs = filtered.length
+    ? Math.round(filtered.reduce((s, r) => s + Number(r.durationMs || 0), 0) / filtered.length)
+    : 0;
+  const timeoutCount = filtered.filter((r) => Number(r.exitCode) === 124).length;
+
+  historyCountEl.textContent = String(filtered.length);
+  historyAvgEl.textContent = msLabel(avgMs);
+  historyTimeoutEl.textContent = String(timeoutCount);
+
+  historyBodyEl.innerHTML = '';
+  filtered.slice(0, 40).forEach((r) => {
+    const tr = document.createElement('tr');
+    const ts = new Date(r.ts || Date.now()).toLocaleTimeString();
+    const cmd = String(r.command || r.key || '-').slice(0, 84);
+    const ok = Number(r.exitCode) === 0;
+    tr.innerHTML = `<td>${ts}</td><td title="${cmd.replace(/"/g, '&quot;')}">${cmd}</td><td class="${ok ? 'ok' : 'bad'}">${ok ? 'OK' : `ERR(${r.exitCode})`}</td><td>${msLabel(r.durationMs)}</td>`;
+    historyBodyEl.appendChild(tr);
+  });
+}
+
 async function loadAll() {
-  const [quick, board, alerts] = await Promise.all([
+  const [quick, board, alerts, audit] = await Promise.all([
     loadJson('/api/quick-commands'),
     loadJson('/api/board'),
-    loadJson(alertsPath())
+    loadJson(alertsPath()),
+    loadJson('/api/audit')
   ]);
 
   commands = quick.commands || {};
@@ -169,6 +225,7 @@ async function loadAll() {
     alertsEl.appendChild(chip);
   });
   successRateEl.textContent = `${alerts.successRate ?? 100}%`;
+  renderHistory(audit.lines || []);
 
   boardTimeEl.textContent = new Date().toLocaleTimeString();
 }
@@ -239,6 +296,15 @@ saveThresholdsEl.onclick = async () => {
   await loadAll();
 };
 
+historyOnlyFailEl.onchange = () => {
+  localStorage.setItem('history-only-fail', historyOnlyFailEl.checked ? '1' : '0');
+  loadAll().catch(() => {});
+};
+historyOnlySlowEl.onchange = () => {
+  localStorage.setItem('history-only-slow', historyOnlySlowEl.checked ? '1' : '0');
+  loadAll().catch(() => {});
+};
+
 try {
   const saved = JSON.parse(localStorage.getItem('alert-thresholds') || '{}');
   if (saved.loadWarn) loadWarnEl.value = saved.loadWarn;
@@ -253,6 +319,11 @@ try {
 try {
   const smart = localStorage.getItem('smart-refresh-enabled');
   if (smart === '0') smartRefreshEl.checked = false;
+} catch {}
+
+try {
+  historyOnlyFailEl.checked = localStorage.getItem('history-only-fail') === '1';
+  historyOnlySlowEl.checked = localStorage.getItem('history-only-slow') === '1';
 } catch {}
 
 connectWs();

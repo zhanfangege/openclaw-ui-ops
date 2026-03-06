@@ -308,6 +308,7 @@ wss.on('connection', (ws, req) => {
       if (!item) return ws.send(JSON.stringify({ type: 'error', data: 'unknown command key' }));
       if (current) { current.kill(); current = null; }
 
+      const startedAt = Date.now();
       current = pty.spawn('bash', ['-lc', item.command], {
         name: 'xterm-color', cols: 120, rows: 30, cwd: process.cwd(), env: process.env
       });
@@ -317,8 +318,9 @@ wss.on('connection', (ws, req) => {
 
       current.onData((data) => ws.send(JSON.stringify({ type: 'stdout', data })));
       current.onExit(({ exitCode }) => {
-        audit('command_exit', { key: msg.key, command: item.command, exitCode });
-        ws.send(JSON.stringify({ type: 'exit', data: { code: exitCode } }));
+        const durationMs = Date.now() - startedAt;
+        audit('command_exit', { key: msg.key, command: item.command, exitCode, durationMs });
+        ws.send(JSON.stringify({ type: 'exit', data: { code: exitCode, durationMs } }));
         current = null;
       });
     }

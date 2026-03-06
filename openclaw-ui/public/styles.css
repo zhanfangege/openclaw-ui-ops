@@ -99,6 +99,41 @@ pre::-webkit-scrollbar { width: 8px; }
 pre::-webkit-scrollbar-track { background: #0a1024; border-radius: 8px; }
 pre::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #35f2ff, #6f59ff); border-radius: 8px; }
 
+.history-toolbar {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.history-toolbar h3 {
+  margin: 0;
+  font-size: 11px;
+  color: var(--cyan);
+  text-transform: uppercase;
+}
+.history-toolbar label { font-size: 11px; opacity: .9; display: flex; gap: 6px; align-items: center; }
+.history-meta {
+  margin-top: 6px;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  opacity: .9;
+}
+.history-table-wrap {
+  margin-top: 8px;
+  max-height: 180px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.history-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.history-table th, .history-table td { padding: 6px 8px; border-bottom: 1px solid rgba(98, 128, 255, 0.2); text-align: left; }
+.history-table thead th { position: sticky; top: 0; background: #0b1126; z-index: 1; }
+.history-table td.ok { color: #7df0b8; }
+.history-table td.bad { color: #ff9fb4; }
+
 @media (max-width: 1200px) {
   body { overflow:auto; height:auto; }
   header { min-height: unset; height: auto; align-items: flex-start; }
