@@ -4,7 +4,10 @@ OpenClaw 的独立 Web 运维看板（MVP+）。
 
 - 运行状态总览（OpenClaw / Gateway / Sessions / Subagents）
 - 快捷命令一键执行 + 实时终端输出
+- 交互式终端（可在页面直接输入命令）
 - 告警与成功率统计
+- 命令历史筛选（仅失败 / 仅慢命令）
+- 命令分析面板（成功率、平均耗时、Top 慢命令、ExitCode 聚合）
 - 审计日志留存
 - 可选 Token 鉴权
 - 移动端响应式适配
@@ -93,12 +96,14 @@ npm start
 - `GET /api/sessions`
 - `GET /api/subagents`
 - `GET /api/audit`
+- `GET /api/metrics`（命令聚合统计：成功率/耗时/错误分布）
 - `GET /api/alerts?loadWarn=8&memWarn=85`
 
 ### WebSocket
 
 - `WS /ws?token=...`
 - 前端通过 `quick-run` 触发后端命令，实时接收 stdout / exit / error 事件
+- 交互终端事件：`pty-start-shell` / `pty-input` / `pty-stop`
 
 ---
 

@@ -41,7 +41,9 @@ Operations toolkit and web console for OpenClaw, including a standalone dashboar
 
 - Runtime board: OpenClaw / Gateway / Sessions / Subagents / resource status
 - Quick command buttons with real-time terminal streaming
+- Interactive terminal mode (direct command input + Ctrl+C support)
 - Audit log output (`openclaw-ui/audit.log`)
+- Observability analytics: command history filters, avg duration/timeout stats, slow-command ranking, exit-code aggregation
 - Optional token auth (`UI_TOKEN`)
 - Mobile-friendly responsive layout
 - Auto-recovery scripts via watchdog

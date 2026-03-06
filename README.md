@@ -43,7 +43,9 @@ OpenClaw 运维与控制台项目（含独立 Web 看板 `openclaw-ui`）。
 
 - **运行看板**：OpenClaw / Gateway / Sessions / Subagents / 资源状态
 - **快捷命令执行**：一键触发常见命令，实时回显输出
+- **交互式终端**：在 Web 页面直接输入命令，支持 Ctrl+C 中断
 - **审计记录**：执行事件记录到 `openclaw-ui/audit.log`
+- **可观测分析**：命令历史筛选、平均耗时、超时统计、Top 慢命令、ExitCode 聚合
 - **安全开关**：支持 `UI_TOKEN` 鉴权
 - **手机适配**：响应式布局，支持移动端浏览器访问
 - **自恢复**：看板 watchdog 自动检测异常并重启
