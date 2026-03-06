@@ -131,7 +131,7 @@ A GHCR publish workflow is now included (`.github/workflows/publish-ghcr.yml`).
 After publishing, the image will appear in the repository **Packages** panel.
 
 Image name:
-- `ghcr.io/zhanfangege/openclaw-ui-ops:v0.1.1`
+- `ghcr.io/zhanfangege/openclaw-ui-ops:v0.2.0`
 - `ghcr.io/zhanfangege/openclaw-ui-ops:latest`
 
 Pull example:
@@ -159,13 +159,13 @@ Full guide: `deploy/PACKAGES.md`
 
 A ready-to-download release package is included in `releases/`:
 
-- `releases/openclaw-ui-ops-v0.1.0.tar.gz`
-- `releases/openclaw-ui-ops-v0.1.0.sha256`
+- `releases/openclaw-ui-ops-v0.2.0.tar.gz`
+- `releases/openclaw-ui-ops-v0.2.0.sha256`
 
 Checksum verification:
 
 ```bash
-sha256sum -c releases/openclaw-ui-ops-v0.1.0.sha256
+sha256sum -c releases/openclaw-ui-ops-v0.2.0.sha256
 ```
 
 ---
@@ -175,7 +175,7 @@ sha256sum -c releases/openclaw-ui-ops-v0.1.0.sha256
 - Chinese README: `README.md`
 - Changelog: `CHANGELOG.md`
 - Roadmap: `ROADMAP.md`
-- Release notes: `RELEASE_NOTES_v0.1.0.md`
+- Release notes: `RELEASE_NOTES_v0.2.0.md`
 - Cold-start deploy checklist: `DEPLOY_CHECKLIST.md`
 - UI details: `openclaw-ui/README.md`
 - Architecture: `docs/ARCHITECTURE.md`

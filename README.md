@@ -152,7 +152,7 @@ nohup ./scripts/watchdog-loop.sh > runtime/watchdog-loop.nohup.log 2>&1 &
 发布后可在仓库右侧 **Packages** 看到镜像。
 
 镜像名：
-- `ghcr.io/zhanfangege/openclaw-ui-ops:v0.1.1`
+- `ghcr.io/zhanfangege/openclaw-ui-ops:v0.2.0`
 - `ghcr.io/zhanfangege/openclaw-ui-ops:latest`
 
 拉取示例：
@@ -180,13 +180,13 @@ docker run -d --name openclaw-ui \
 
 已提供可直接下载的发布压缩包（仓库 `releases/` 目录）：
 
-- `releases/openclaw-ui-ops-v0.1.0.tar.gz`
-- `releases/openclaw-ui-ops-v0.1.0.sha256`
+- `releases/openclaw-ui-ops-v0.2.0.tar.gz`
+- `releases/openclaw-ui-ops-v0.2.0.sha256`
 
 校验示例：
 
 ```bash
-sha256sum -c releases/openclaw-ui-ops-v0.1.0.sha256
+sha256sum -c releases/openclaw-ui-ops-v0.2.0.sha256
 ```
 
 ---
@@ -196,7 +196,7 @@ sha256sum -c releases/openclaw-ui-ops-v0.1.0.sha256
 - 英文说明：`README.en.md`
 - 变更记录：`CHANGELOG.md`
 - 版本规划：`ROADMAP.md`
-- 首版发布说明：`RELEASE_NOTES_v0.1.0.md`
+- 发布说明：`RELEASE_NOTES_v0.2.0.md`
 - 冷启动部署检查单：`DEPLOY_CHECKLIST.md`
 - 架构说明：`docs/ARCHITECTURE.md`
 - 展示素材规范：`docs/SHOWCASE.md`
