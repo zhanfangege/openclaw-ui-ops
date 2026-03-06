@@ -24,19 +24,25 @@ const historyOnlySlowEl = $('historyOnlySlow');
 const cmdStatsBodyEl = $('cmdStatsBody');
 const slowTopBodyEl = $('slowTopBody');
 const errBreakdownBodyEl = $('errBreakdownBody');
-const term = new window.Terminal({ convertEol: true, cursorBlink: true, disableStdin: true, scrollback: 3000, theme: { background: '#050a15' } });
+const term = new window.Terminal({ convertEol: true, cursorBlink: true, disableStdin: false, scrollback: 3000, theme: { background: '#050a15' } });
 term.open($('terminal'));
 
 let ws;
 let commands = {};
 let refreshTimer = null;
 let running = false;
+let interactiveShell = false;
 const trend = [];
 
 function authHeaders() {
   const token = tokenEl.value.trim();
   return token ? { 'x-ui-token': token } : {};
 }
+
+term.onData((data) => {
+  if (!interactiveShell) return;
+  ws?.send(JSON.stringify({ type: 'pty-input', data }));
+});
 
 async function loadJson(path) {
   const r = await fetch(path, { headers: authHeaders() });
@@ -291,11 +297,17 @@ function connectWs() {
       term.scrollToBottom();
     }
     if (msg.type === 'start') {
+      interactiveShell = msg.data?.mode === 'shell';
       setBusy(true);
-      term.writeln(`\r\n\x1b[36m$ ${msg.data.command}\x1b[0m`);
+      if (interactiveShell) {
+        term.writeln(`\r\n\x1b[36m[interactive shell connected]\x1b[0m`);
+      } else {
+        term.writeln(`\r\n\x1b[36m$ ${msg.data.command}\x1b[0m`);
+      }
       term.scrollToBottom();
     }
     if (msg.type === 'exit') {
+      interactiveShell = false;
       setBusy(false);
       term.writeln(`\r\n\x1b[33m[exit ${msg.data.code}]\x1b[0m`);
       term.scrollToBottom();
@@ -310,6 +322,13 @@ function connectWs() {
 }
 
 $('refresh').onclick = async () => { connectWs(); await loadAll(); };
+$('startShell').onclick = () => {
+  if (running) return;
+  ws?.send(JSON.stringify({ type: 'pty-start-shell' }));
+};
+$('sendCtrlC').onclick = () => {
+  ws?.send(JSON.stringify({ type: 'pty-input', data: '\u0003' }));
+};
 $('stop').onclick = () => ws?.send(JSON.stringify({ type: 'pty-stop' }));
 autoRefreshEl.onchange = () => startAutoRefresh();
 smartRefreshEl.onchange = () => {

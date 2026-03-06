@@ -357,7 +357,7 @@ wss.on('connection', (ws, req) => {
       });
 
       audit('command_start', { key: msg.key, command: item.command, ip: req.socket.remoteAddress || '' });
-      ws.send(JSON.stringify({ type: 'start', data: { command: item.command, key: msg.key, label: item.label } }));
+      ws.send(JSON.stringify({ type: 'start', data: { command: item.command, key: msg.key, label: item.label, mode: 'quick' } }));
 
       current.onData((data) => ws.send(JSON.stringify({ type: 'stdout', data })));
       current.onExit(({ exitCode }) => {
@@ -366,6 +366,27 @@ wss.on('connection', (ws, req) => {
         ws.send(JSON.stringify({ type: 'exit', data: { code: exitCode, durationMs } }));
         current = null;
       });
+    }
+
+    if (msg.type === 'pty-start-shell') {
+      if (current) { current.kill(); current = null; }
+      const startedAt = Date.now();
+      current = pty.spawn('bash', ['-l'], {
+        name: 'xterm-color', cols: 120, rows: 30, cwd: process.cwd(), env: process.env
+      });
+      audit('shell_start', { ip: req.socket.remoteAddress || '' });
+      ws.send(JSON.stringify({ type: 'start', data: { mode: 'shell' } }));
+      current.onData((data) => ws.send(JSON.stringify({ type: 'stdout', data })));
+      current.onExit(({ exitCode }) => {
+        const durationMs = Date.now() - startedAt;
+        audit('shell_exit', { exitCode, durationMs });
+        ws.send(JSON.stringify({ type: 'exit', data: { code: exitCode, durationMs } }));
+        current = null;
+      });
+    }
+
+    if (msg.type === 'pty-input' && current && typeof msg.data === 'string') {
+      current.write(msg.data);
     }
 
     if (msg.type === 'pty-stop' && current) {

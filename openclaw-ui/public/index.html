@@ -61,8 +61,12 @@
       </section>
 
       <section class="panel terminal-panel">
-        <h2>执行输出</h2>
-        <div class="cmdbar"><button id="stop">停止当前命令</button></div>
+        <h2>执行输出（支持交互）</h2>
+        <div class="cmdbar">
+          <button id="startShell">连接交互终端</button>
+          <button id="sendCtrlC">发送 Ctrl+C</button>
+          <button id="stop">停止当前命令</button>
+        </div>
         <div id="terminal"></div>
       </section>
 
